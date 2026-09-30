@@ -1,0 +1,32 @@
+# Python / Backend
+backend/__pycache__/
+backend/*/__pycache__/
+backend/*/*/__pycache__/
+backend/*.pyc
+backend/.pytest_cache/
+backend/.dist/
+backend/uploads/Attendance_*
+backend/uploads/Daily_Report_*
+backend/processed_exports/*
+backend/*.db
+backend/planotech.db
+
+# Node / Frontend
+frontend/node_modules/
+frontend/dist/
+frontend/dist-ssr/
+frontend/.vite/
+frontend/*.local
+
+# Mobile native builds
+frontend/android/.gradle/
+frontend/android/build/
+frontend/android/app/build/
+frontend/android/local.properties
+frontend/ios/App/Pods/
+frontend/ios/App/Podfile.lock
+
+# Environment & OS
+.env
+.DS_Store
+Thumbs.db

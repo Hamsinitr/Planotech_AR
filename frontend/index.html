@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <link rel="manifest" href="/manifest.json" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+    <meta name="theme-color" content="#2563eb" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="Planotech HR" />
+    <meta name="description" content="Planotech HR & Attendance Portal - Daily Attendance, Productivity Tracking, and Employee Analytics" />
+    <title>Planotech HR - Attendance & Productivity Intelligence</title>
+  </head>
+  <body class="bg-slate-50 antialiased selection:bg-blue-500 selection:text-white">
+    <div id="root"></div>
+    <script type="module" src="/src/main.jsx"></script>
+    <script>
+      if ('serviceWorker' in navigator && window.location.protocol.startsWith('http')) {
+        window.addEventListener('load', () => {
+          navigator.serviceWorker.register('/sw.js')
+            .then((registration) => {
+              console.log('Planotech PWA ServiceWorker registered with scope:', registration.scope);
+            })
+            .catch((error) => {
+              console.warn('Planotech PWA ServiceWorker registration failed:', error);
+            });
+        });
+      }
+    </script>
+  </body>
+</html>
+
