@@ -1,15 +1,15 @@
 import React, { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { getApiBaseUrl, setApiBaseUrl } from '../api/client';
-import { Lock, Mail, Shield, User, ArrowRight, Server, Settings, Check } from 'lucide-react';
+import { Lock, Mail, Zap, Server, Check, ChevronRight, Eye, EyeOff } from 'lucide-react';
 
 export const Login = () => {
   const { login, loading } = useAuth();
   const [email, setEmail] = useState('admin@planotech.com');
   const [password, setPassword] = useState('admin123');
+  const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
-  
-  // Server Config State
+
   const [showServerConfig, setShowServerConfig] = useState(false);
   const [serverUrl, setServerUrlInput] = useState(getApiBaseUrl());
   const [serverSaved, setServerSaved] = useState(false);
@@ -24,15 +24,12 @@ export const Login = () => {
   };
 
   const handleQuickLogin = (role) => {
-    if (role === 'admin') {
-      setEmail('admin@planotech.com');
-      setPassword('admin123');
-      login('admin@planotech.com', 'admin123');
-    } else {
-      setEmail('viewer@planotech.com');
-      setPassword('viewer123');
-      login('viewer@planotech.com', 'viewer123');
-    }
+    const creds = role === 'admin'
+      ? { e: 'admin@planotech.com', p: 'admin123' }
+      : { e: 'viewer@planotech.com', p: 'viewer123' };
+    setEmail(creds.e);
+    setPassword(creds.p);
+    login(creds.e, creds.p);
   };
 
   const handleSaveServerUrl = (e) => {
@@ -42,168 +39,200 @@ export const Login = () => {
     setTimeout(() => setServerSaved(false), 2000);
   };
 
-  const setPresetUrl = (url) => {
-    setServerUrlInput(url);
-    setApiBaseUrl(url);
-    setServerSaved(true);
-    setTimeout(() => setServerSaved(false), 2000);
-  };
-
   return (
-    <div className="min-h-screen bg-slate-950 flex flex-col justify-center py-12 sm:px-6 lg:px-8 relative overflow-hidden">
-      {/* Background glow */}
-      <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-96 h-96 bg-blue-600/20 rounded-full blur-3xl pointer-events-none" />
+    <div className="min-h-screen flex relative overflow-hidden" style={{ background: 'linear-gradient(135deg, #080c1a 0%, #0d1424 50%, #111b30 100%)' }}>
+      {/* Left decorative panel */}
+      <div className="hidden lg:flex w-1/2 relative items-center justify-center p-16">
+        {/* Background glows */}
+        <div className="absolute top-1/4 left-1/4 w-80 h-80 rounded-full blur-3xl opacity-20" style={{ background: '#3b82f6' }} />
+        <div className="absolute bottom-1/4 right-1/4 w-64 h-64 rounded-full blur-3xl opacity-15" style={{ background: '#8b5cf6' }} />
 
-      <div className="sm:mx-auto sm:w-full sm:max-w-md relative z-10">
-        <div className="flex justify-center">
-          <div className="w-14 h-14 rounded-2xl bg-gradient-to-tr from-blue-600 to-indigo-500 flex items-center justify-center text-white text-2xl font-bold shadow-xl shadow-blue-500/25">
-            P
+        <div className="relative z-10 max-w-sm">
+          <div className="flex items-center gap-3 mb-10">
+            <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: 'linear-gradient(135deg, #3b82f6, #7c3aed)' }}>
+              <Zap className="w-5 h-5 text-white" />
+            </div>
+            <div>
+              <h1 className="text-lg font-black text-white tracking-wide">PLANOTECH</h1>
+              <p className="text-[10px] font-bold tracking-widest uppercase" style={{ color: '#f59e0b' }}>HR Intelligence Platform</p>
+            </div>
+          </div>
+
+          <h2 className="text-4xl font-black text-white leading-tight mb-4">
+            Smarter HR<br />
+            <span style={{ background: 'linear-gradient(135deg, #3b82f6, #8b5cf6)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
+              Analytics.
+            </span>
+          </h2>
+          <p className="text-slate-400 text-sm leading-relaxed mb-10">
+            Real-time attendance tracking, report submission compliance, productivity scoring, and automated reconciliation — all in one place.
+          </p>
+
+          <div className="space-y-3">
+            {[
+              { label: 'Daily attendance classification & punch-in analysis' },
+              { label: 'Report quality scoring & submission compliance' },
+              { label: 'Automated 9-sheet Excel export' },
+              { label: 'Historical trends & department analytics' },
+            ].map((item, i) => (
+              <div key={i} className="flex items-center gap-3">
+                <div className="w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0" style={{ background: 'rgba(59,130,246,0.15)', border: '1px solid rgba(59,130,246,0.3)' }}>
+                  <Check className="w-2.5 h-2.5 text-blue-400" />
+                </div>
+                <span className="text-sm text-slate-400">{item.label}</span>
+              </div>
+            ))}
           </div>
         </div>
-        <h2 className="mt-4 text-center text-2xl font-extrabold text-white tracking-tight">
-          PLANOTECH
-        </h2>
-        <p className="mt-1 text-center text-xs font-semibold text-blue-400 uppercase tracking-widest">
-          HR Analytics & Productivity Intelligence
-        </p>
       </div>
 
-      <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md relative z-10">
-        <div className="bg-slate-900 border border-slate-800 py-8 px-6 shadow-2xl rounded-2xl sm:px-10">
-          <form className="space-y-4" onSubmit={handleSubmit}>
+      {/* Right login panel */}
+      <div className="flex-1 lg:w-1/2 flex items-center justify-center p-6 relative z-10">
+        {/* Mobile glow */}
+        <div className="lg:hidden absolute top-1/4 left-1/2 -translate-x-1/2 w-80 h-80 rounded-full blur-3xl opacity-20" style={{ background: '#3b82f6' }} />
+
+        <div className="w-full max-w-md relative">
+          {/* Mobile logo */}
+          <div className="lg:hidden flex items-center gap-3 mb-8 justify-center">
+            <div className="w-9 h-9 rounded-xl flex items-center justify-center" style={{ background: 'linear-gradient(135deg, #3b82f6, #7c3aed)' }}>
+              <Zap className="w-4.5 h-4.5 text-white" />
+            </div>
+            <div>
+              <h1 className="text-base font-black text-white">PLANOTECH</h1>
+              <p className="text-[9px] font-bold tracking-widest uppercase" style={{ color: '#f59e0b' }}>HR Intelligence</p>
+            </div>
+          </div>
+
+          {/* Login Card */}
+          <div
+            className="rounded-2xl p-8 shadow-2xl"
+            style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', backdropFilter: 'blur(16px)' }}
+          >
+            <div className="mb-6">
+              <h3 className="text-xl font-bold text-white">Sign in to your account</h3>
+              <p className="text-sm text-slate-400 mt-1">Enter your credentials to access the portal</p>
+            </div>
+
             {error && (
-              <div className="p-3 bg-rose-500/10 border border-rose-500/30 rounded-lg text-rose-400 text-xs">
-                {error}
+              <div className="mb-4 p-3 rounded-lg text-sm text-rose-300 flex items-start gap-2" style={{ background: 'rgba(244,63,94,0.1)', border: '1px solid rgba(244,63,94,0.25)' }}>
+                <span className="flex-shrink-0 mt-0.5">⚠</span>
+                <span>{error}</span>
               </div>
             )}
 
-            <div>
-              <label className="block text-xs font-medium text-slate-300 mb-1">Work Email</label>
-              <div className="relative rounded-lg shadow-sm">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-500">
-                  <Mail className="w-4 h-4" />
+            <form onSubmit={handleSubmit} className="space-y-4">
+              {/* Email */}
+              <div>
+                <label className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-1.5 block">Email Address</label>
+                <div className="relative">
+                  <Mail className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" />
+                  <input
+                    type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    required
+                    className="w-full pl-10 pr-4 py-2.5 rounded-lg text-sm text-white outline-none transition"
+                    style={{
+                      background: 'rgba(255,255,255,0.06)',
+                      border: '1px solid rgba(255,255,255,0.1)',
+                    }}
+                    onFocus={e => e.target.style.borderColor = 'rgba(59,130,246,0.5)'}
+                    onBlur={e => e.target.style.borderColor = 'rgba(255,255,255,0.1)'}
+                  />
                 </div>
-                <input
-                  type="email"
-                  required
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  className="block w-full pl-9 pr-3 py-2.5 bg-slate-950 border border-slate-800 rounded-lg text-white placeholder-slate-500 text-xs focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition"
-                  placeholder="name@company.com"
-                />
+              </div>
+
+              {/* Password */}
+              <div>
+                <label className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-1.5 block">Password</label>
+                <div className="relative">
+                  <Lock className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" />
+                  <input
+                    type={showPassword ? 'text' : 'password'}
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    required
+                    className="w-full pl-10 pr-10 py-2.5 rounded-lg text-sm text-white outline-none transition"
+                    style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)' }}
+                    onFocus={e => e.target.style.borderColor = 'rgba(59,130,246,0.5)'}
+                    onBlur={e => e.target.style.borderColor = 'rgba(255,255,255,0.1)'}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-300 transition"
+                  >
+                    {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                  </button>
+                </div>
+              </div>
+
+              {/* Sign In Button */}
+              <button
+                type="submit"
+                disabled={loading}
+                className="w-full py-2.5 rounded-lg text-sm font-bold text-white flex items-center justify-center gap-2 transition-all disabled:opacity-50"
+                style={{ background: loading ? '#334155' : 'linear-gradient(135deg, #2563eb, #7c3aed)', boxShadow: '0 4px 20px rgba(37,99,235,0.35)' }}
+              >
+                {loading ? (
+                  <span className="animate-pulse">Signing in...</span>
+                ) : (
+                  <>Sign In <ChevronRight className="w-4 h-4" /></>
+                )}
+              </button>
+            </form>
+
+            {/* Quick Login */}
+            <div className="mt-5 pt-5" style={{ borderTop: '1px solid rgba(255,255,255,0.07)' }}>
+              <p className="text-[10px] text-slate-500 uppercase tracking-wider mb-2.5 text-center">Quick Access</p>
+              <div className="grid grid-cols-2 gap-2">
+                <button
+                  onClick={() => handleQuickLogin('admin')}
+                  className="py-2 rounded-lg text-xs font-semibold transition"
+                  style={{ background: 'rgba(59,130,246,0.1)', border: '1px solid rgba(59,130,246,0.25)', color: '#60a5fa' }}
+                >
+                  Admin Demo
+                </button>
+                <button
+                  onClick={() => handleQuickLogin('viewer')}
+                  className="py-2 rounded-lg text-xs font-semibold transition"
+                  style={{ background: 'rgba(148,163,184,0.08)', border: '1px solid rgba(148,163,184,0.2)', color: '#94a3b8' }}
+                >
+                  Viewer Demo
+                </button>
               </div>
             </div>
 
-            <div>
-              <label className="block text-xs font-medium text-slate-300 mb-1">Password</label>
-              <div className="relative rounded-lg shadow-sm">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-500">
-                  <Lock className="w-4 h-4" />
-                </div>
-                <input
-                  type="password"
-                  required
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  className="block w-full pl-9 pr-3 py-2.5 bg-slate-950 border border-slate-800 rounded-lg text-white placeholder-slate-500 text-xs focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition"
-                  placeholder="••••••••"
-                />
-              </div>
-            </div>
-
-            <button
-              type="submit"
-              disabled={loading}
-              className="w-full flex justify-center items-center py-2.5 px-4 border border-transparent rounded-lg shadow-sm text-xs font-bold text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition disabled:opacity-50"
-            >
-              {loading ? 'Authenticating...' : 'Sign In to Workspace'}
-              {!loading && <ArrowRight className="ml-1.5 w-3.5 h-3.5" />}
-            </button>
-          </form>
-
-          {/* Quick Login Helper */}
-          <div className="mt-6 pt-6 border-t border-slate-800">
-            <p className="text-[11px] text-slate-400 text-center font-medium mb-3">Quick Demo Access:</p>
-            <div className="grid grid-cols-2 gap-2">
+            {/* Server Config */}
+            <div className="mt-4">
               <button
-                type="button"
-                onClick={() => handleQuickLogin('admin')}
-                className="flex items-center justify-center space-x-1.5 py-2 px-3 bg-slate-800/80 hover:bg-slate-800 border border-slate-700 rounded-lg text-xs font-medium text-slate-200 transition"
+                onClick={() => setShowServerConfig(!showServerConfig)}
+                className="flex items-center gap-1.5 text-[10px] text-slate-600 hover:text-slate-400 transition w-full justify-center"
               >
-                <Shield className="w-3.5 h-3.5 text-blue-400" />
-                <span>Admin Role</span>
+                <Server className="w-3 h-3" />
+                {showServerConfig ? 'Hide' : 'Configure'} API Server
               </button>
-              <button
-                type="button"
-                onClick={() => handleQuickLogin('viewer')}
-                className="flex items-center justify-center space-x-1.5 py-2 px-3 bg-slate-800/80 hover:bg-slate-800 border border-slate-700 rounded-lg text-xs font-medium text-slate-200 transition"
-              >
-                <User className="w-3.5 h-3.5 text-emerald-400" />
-                <span>Viewer Role</span>
-              </button>
-            </div>
-          </div>
 
-          {/* Android / Mobile API Server Config */}
-          <div className="mt-6 pt-4 border-t border-slate-800/60">
-            <button
-              type="button"
-              onClick={() => setShowServerConfig(!showServerConfig)}
-              className="flex items-center justify-between w-full text-[11px] text-slate-400 hover:text-slate-200 transition"
-            >
-              <span className="flex items-center space-x-1.5">
-                <Server className="w-3.5 h-3.5 text-slate-500" />
-                <span>Backend Server Connection</span>
-              </span>
-              <Settings className="w-3.5 h-3.5 text-slate-500" />
-            </button>
-
-            {showServerConfig && (
-              <div className="mt-3 p-3 bg-slate-950/80 rounded-lg border border-slate-800 text-xs space-y-2">
-                <label className="block text-[10px] text-slate-400 font-medium uppercase tracking-wider">
-                  API Endpoint Base URL
-                </label>
-                <div className="flex space-x-2">
+              {showServerConfig && (
+                <form onSubmit={handleSaveServerUrl} className="mt-3 space-y-2">
                   <input
                     type="text"
                     value={serverUrl}
                     onChange={(e) => setServerUrlInput(e.target.value)}
-                    className="flex-1 px-2.5 py-1.5 bg-slate-900 border border-slate-700 rounded text-slate-200 text-xs focus:outline-none focus:border-blue-500"
-                    placeholder="http://192.168.1.xxx:8000/api"
+                    placeholder="https://your-backend.onrender.com"
+                    className="w-full px-3 py-2 rounded-lg text-xs text-white outline-none"
+                    style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)' }}
                   />
                   <button
-                    onClick={handleSaveServerUrl}
-                    className="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded text-xs transition flex items-center space-x-1"
+                    type="submit"
+                    className="w-full py-1.5 rounded-lg text-xs font-semibold transition flex items-center justify-center gap-2"
+                    style={{ background: 'rgba(16,185,129,0.15)', border: '1px solid rgba(16,185,129,0.3)', color: '#34d399' }}
                   >
-                    {serverSaved ? <Check className="w-3.5 h-3.5 text-emerald-300" /> : 'Save'}
+                    {serverSaved ? <><Check className="w-3 h-3" /> Saved</> : 'Save API URL'}
                   </button>
-                </div>
-                <div className="flex flex-wrap gap-1.5 pt-1">
-                  <span className="text-[10px] text-slate-500 font-medium">Quick Presets:</span>
-                  <button
-                    type="button"
-                    onClick={() => setPresetUrl('/api')}
-                    className="text-[10px] px-2 py-0.5 bg-slate-800 text-slate-300 rounded hover:bg-slate-700"
-                  >
-                    Web Proxy (/api)
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setPresetUrl('http://10.0.2.2:8000/api')}
-                    className="text-[10px] px-2 py-0.5 bg-slate-800 text-slate-300 rounded hover:bg-slate-700"
-                  >
-                    Android Emulator (10.0.2.2)
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setPresetUrl('http://localhost:8000/api')}
-                    className="text-[10px] px-2 py-0.5 bg-slate-800 text-slate-300 rounded hover:bg-slate-700"
-                  >
-                    Localhost (8000)
-                  </button>
-                </div>
-              </div>
-            )}
+                </form>
+              )}
+            </div>
           </div>
         </div>
       </div>

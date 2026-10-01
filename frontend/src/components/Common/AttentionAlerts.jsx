@@ -1,5 +1,35 @@
 import React, { useState } from 'react';
-import { AlertTriangle, ChevronDown, ChevronUp, Clock, FileX, UserX } from 'lucide-react';
+import { AlertTriangle, ChevronDown, ChevronUp, Clock, FileX, UserX, Star, TrendingDown } from 'lucide-react';
+
+const FreqBadge = ({ count, type }) => {
+  const styles = {
+    late: count >= 5 ? 'freq-badge-red' : count >= 3 ? 'freq-badge-amber' : 'freq-badge-blue',
+    unsub: count >= 5 ? 'freq-badge-red' : count >= 3 ? 'freq-badge-amber' : 'freq-badge-purple',
+  };
+  return (
+    <span className={`freq-badge ${styles[type] || 'freq-badge-blue'}`}>
+      {count}×
+    </span>
+  );
+};
+
+const AlertCard = ({ title, subtitle, icon: Icon, iconColor, borderColor, bgColor, count, children }) => (
+  <div className={`rounded-xl border p-4 ${borderColor} ${bgColor}`}>
+    <div className="flex items-center justify-between mb-3">
+      <div className="flex items-center gap-2">
+        <div className={`w-7 h-7 rounded-lg flex items-center justify-center ${iconColor}`}>
+          <Icon className="w-3.5 h-3.5" />
+        </div>
+        <div>
+          <h4 className="text-xs font-bold text-slate-800 leading-none">{title}</h4>
+          <p className="text-[10px] text-slate-500 mt-0.5">{subtitle}</p>
+        </div>
+      </div>
+      <span className={`freq-badge ${count > 0 ? 'freq-badge-red' : 'freq-badge-blue'}`}>{count}</span>
+    </div>
+    {children}
+  </div>
+);
 
 export const AttentionAlerts = ({ attentionData, onSelectEmployee }) => {
   const [expanded, setExpanded] = useState(true);
@@ -11,140 +41,156 @@ export const AttentionAlerts = ({ attentionData, onSelectEmployee }) => {
     unsubmitted_today = [],
     repeated_unsubmitted = [],
     repeated_late = [],
+    top_performers = [],
   } = attentionData;
 
-  const totalIssues = absent_today.length + unsubmitted_today.length + repeated_unsubmitted.length + repeated_late.length;
+  const totalIssues = unsubmitted_today.length + repeated_unsubmitted.length + repeated_late.length;
+
+  // Sort repeated offenders by frequency descending
+  const sortedLate = [...repeated_late].sort((a, b) => b.late_count - a.late_count);
+  const sortedUnsub = [...repeated_unsubmitted].sort((a, b) => b.unsubmitted_count - a.unsubmitted_count);
 
   return (
-    <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden mb-6">
+    <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
       <div
-        className="px-6 py-4 bg-slate-50 border-b border-slate-200 flex items-center justify-between cursor-pointer select-none"
+        className="px-5 py-3.5 flex items-center justify-between cursor-pointer select-none border-b border-slate-100 hover:bg-slate-50/50 transition"
         onClick={() => setExpanded(!expanded)}
       >
-        <div className="flex items-center space-x-3">
-          <div className="w-8 h-8 rounded-full bg-amber-100 flex items-center justify-center text-amber-700">
-            <AlertTriangle className="w-4 h-4" />
+        <div className="flex items-center gap-3">
+          <div className="w-8 h-8 rounded-lg bg-amber-50 border border-amber-200 flex items-center justify-center">
+            <AlertTriangle className="w-4 h-4 text-amber-500" />
           </div>
           <div>
-            <h3 className="text-sm font-semibold text-slate-800">Operational Alerts & Attention Required</h3>
-            <p className="text-xs text-slate-500">Real-time alerts for absences, unsubmitted reports, and repeated patterns</p>
+            <h3 className="text-sm font-bold text-slate-800 leading-none">Operational Alerts</h3>
+            <p className="text-[10px] text-slate-400 mt-0.5">Absences, unsubmitted reports, and repeat offenders</p>
           </div>
         </div>
-        <div className="flex items-center space-x-2">
+        <div className="flex items-center gap-2.5">
           {totalIssues > 0 && (
-            <span className="px-2.5 py-1 text-xs font-semibold rounded-full bg-amber-100 text-amber-800">
-              {totalIssues} Alerts
-            </span>
+            <span className="freq-badge freq-badge-red">{totalIssues} issues</span>
           )}
-          {expanded ? <ChevronUp className="w-5 h-5 text-slate-400" /> : <ChevronDown className="w-5 h-5 text-slate-400" />}
+          {expanded ? <ChevronUp className="w-4 h-4 text-slate-400" /> : <ChevronDown className="w-4 h-4 text-slate-400" />}
         </div>
       </div>
 
       {expanded && (
-        <div className="p-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-          {/* Card 1: Absent Today */}
-          <div className="p-4 rounded-lg border border-slate-200 bg-slate-50/50">
-            <div className="flex items-center space-x-2 text-slate-700 mb-2">
-              <UserX className="w-4 h-4 text-slate-500" />
-              <h4 className="text-xs font-bold uppercase tracking-wider">Absent Today ({absent_today.length})</h4>
-            </div>
-            <p className="text-[11px] text-slate-500 mb-2 italic">Classified as Absent (Not penalised as unsubmitted)</p>
+        <div className="p-5 grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
+
+          {/* Absent Today */}
+          <AlertCard
+            title={`Absent Today`}
+            subtitle="Not penalised for non-submission"
+            icon={UserX}
+            iconColor="bg-slate-100 text-slate-500"
+            borderColor="border-slate-200"
+            bgColor="bg-slate-50/40"
+            count={absent_today.length}
+          >
             {absent_today.length === 0 ? (
-              <p className="text-xs text-slate-400">No employees absent today.</p>
+              <p className="text-[11px] text-slate-400 italic">No absences recorded</p>
             ) : (
-              <div className="space-y-1.5 max-h-36 overflow-y-auto pr-1">
+              <div className="space-y-1 max-h-40 overflow-y-auto">
                 {absent_today.map((emp, i) => (
                   <div
                     key={i}
                     onClick={() => onSelectEmployee && onSelectEmployee(emp.employee_name)}
-                    className="text-xs p-1.5 rounded bg-white border border-slate-200 hover:border-blue-400 cursor-pointer flex justify-between items-center"
+                    className="alert-row flex items-center justify-between px-2.5 py-1.5 bg-white border border-slate-200 hover:border-slate-400 rounded-lg"
                   >
-                    <span className="font-medium text-slate-700 truncate">{emp.employee_name}</span>
-                    <span className="text-[10px] text-slate-400 ml-1">{emp.department}</span>
+                    <span className="text-[11px] font-semibold text-slate-700 truncate">{emp.employee_name}</span>
+                    <span className="text-[10px] text-slate-400 ml-2 flex-shrink-0">{emp.department}</span>
                   </div>
                 ))}
               </div>
             )}
-          </div>
+          </AlertCard>
 
-          {/* Card 2: Unsubmitted Today */}
-          <div className="p-4 rounded-lg border border-rose-200 bg-rose-50/30">
-            <div className="flex items-center space-x-2 text-rose-800 mb-2">
-              <FileX className="w-4 h-4 text-rose-600" />
-              <h4 className="text-xs font-bold uppercase tracking-wider">Present, No Report ({unsubmitted_today.length})</h4>
-            </div>
-            <p className="text-[11px] text-rose-600 mb-2">Employees present today who have not submitted</p>
+          {/* Present, No Report */}
+          <AlertCard
+            title={`No Report Submitted`}
+            subtitle="Present employees — action needed"
+            icon={FileX}
+            iconColor="bg-rose-50 text-rose-500"
+            borderColor="border-rose-200"
+            bgColor="bg-rose-50/20"
+            count={unsubmitted_today.length}
+          >
             {unsubmitted_today.length === 0 ? (
-              <p className="text-xs text-slate-400">All present employees submitted reports.</p>
+              <p className="text-[11px] text-emerald-600 font-medium">✓ All present employees submitted</p>
             ) : (
-              <div className="space-y-1.5 max-h-36 overflow-y-auto pr-1">
+              <div className="space-y-1 max-h-40 overflow-y-auto">
                 {unsubmitted_today.map((emp, i) => (
                   <div
                     key={i}
                     onClick={() => onSelectEmployee && onSelectEmployee(emp.employee_name)}
-                    className="text-xs p-1.5 rounded bg-white border border-rose-200 hover:border-rose-400 cursor-pointer flex justify-between items-center"
+                    className="alert-row flex items-center justify-between px-2.5 py-1.5 bg-white border border-rose-200 hover:border-rose-400 rounded-lg"
                   >
-                    <span className="font-medium text-rose-900 truncate">{emp.employee_name}</span>
-                    <span className="text-[10px] text-rose-500 ml-1">{emp.department}</span>
+                    <span className="text-[11px] font-semibold text-rose-800 truncate">{emp.employee_name}</span>
+                    <span className="text-[10px] text-rose-400 ml-2 flex-shrink-0">{emp.department}</span>
                   </div>
                 ))}
               </div>
             )}
-          </div>
+          </AlertCard>
 
-          {/* Card 3: Repeated Non-Submission */}
-          <div className="p-4 rounded-lg border border-amber-200 bg-amber-50/30">
-            <div className="flex items-center space-x-2 text-amber-800 mb-2">
-              <AlertTriangle className="w-4 h-4 text-amber-600" />
-              <h4 className="text-xs font-bold uppercase tracking-wider">Repeated Non-Submission ({repeated_unsubmitted.length})</h4>
-            </div>
-            <p className="text-[11px] text-amber-600 mb-2">Failed submission &ge; 2 times while present</p>
-            {repeated_unsubmitted.length === 0 ? (
-              <p className="text-xs text-slate-400">No repeated non-submissions detected.</p>
+          {/* Repeat Non-Submitters — KEY FEATURE: sorted by frequency */}
+          <AlertCard
+            title={`Frequent Non-Submitters`}
+            subtitle="Missed ≥ 2 times while present"
+            icon={TrendingDown}
+            iconColor="bg-amber-50 text-amber-600"
+            borderColor="border-amber-200"
+            bgColor="bg-amber-50/20"
+            count={sortedUnsub.length}
+          >
+            {sortedUnsub.length === 0 ? (
+              <p className="text-[11px] text-slate-400 italic">No repeat offenders detected</p>
             ) : (
-              <div className="space-y-1.5 max-h-36 overflow-y-auto pr-1">
-                {repeated_unsubmitted.map((emp, i) => (
+              <div className="space-y-1 max-h-40 overflow-y-auto">
+                {sortedUnsub.map((emp, i) => (
                   <div
                     key={i}
                     onClick={() => onSelectEmployee && onSelectEmployee(emp.employee_name)}
-                    className="text-xs p-1.5 rounded bg-white border border-amber-200 hover:border-amber-400 cursor-pointer flex justify-between items-center"
+                    className="alert-row flex items-center justify-between px-2.5 py-1.5 bg-white border border-amber-200 hover:border-amber-400 rounded-lg"
                   >
-                    <span className="font-medium text-slate-800 truncate">{emp.employee_name}</span>
-                    <span className="px-1.5 py-0.5 rounded text-[10px] font-bold bg-amber-100 text-amber-800">
-                      {emp.unsubmitted_count}x
-                    </span>
+                    <span className="text-[11px] font-semibold text-slate-700 truncate">{emp.employee_name}</span>
+                    <FreqBadge count={emp.unsubmitted_count} type="unsub" />
                   </div>
                 ))}
               </div>
             )}
-          </div>
+          </AlertCard>
 
-          {/* Card 4: Repeated Late Punch-Ins */}
-          <div className="p-4 rounded-lg border border-indigo-200 bg-indigo-50/30">
-            <div className="flex items-center space-x-2 text-indigo-800 mb-2">
-              <Clock className="w-4 h-4 text-indigo-600" />
-              <h4 className="text-xs font-bold uppercase tracking-wider">Repeated Late Punch-Ins ({repeated_late.length})</h4>
-            </div>
-            <p className="text-[11px] text-indigo-600 mb-2">Punched in &gt; 9:45 AM on &ge; 2 dates</p>
-            {repeated_late.length === 0 ? (
-              <p className="text-xs text-slate-400">No recurring late arrivals.</p>
+          {/* Repeat Late — KEY FEATURE: sorted by frequency */}
+          <AlertCard
+            title={`Frequent Late Arrivals`}
+            subtitle="Punched after 9:45 AM multiple times"
+            icon={Clock}
+            iconColor="bg-indigo-50 text-indigo-600"
+            borderColor="border-indigo-200"
+            bgColor="bg-indigo-50/20"
+            count={sortedLate.length}
+          >
+            {sortedLate.length === 0 ? (
+              <p className="text-[11px] text-slate-400 italic">No recurring late arrivals</p>
             ) : (
-              <div className="space-y-1.5 max-h-36 overflow-y-auto pr-1">
-                {repeated_late.map((emp, i) => (
+              <div className="space-y-1 max-h-40 overflow-y-auto">
+                {sortedLate.map((emp, i) => (
                   <div
                     key={i}
                     onClick={() => onSelectEmployee && onSelectEmployee(emp.employee_name)}
-                    className="text-xs p-1.5 rounded bg-white border border-indigo-200 hover:border-indigo-400 cursor-pointer flex justify-between items-center"
+                    className="alert-row flex items-center justify-between px-2.5 py-1.5 bg-white border border-indigo-200 hover:border-indigo-400 rounded-lg"
                   >
-                    <span className="font-medium text-slate-800 truncate">{emp.employee_name}</span>
-                    <span className="px-1.5 py-0.5 rounded text-[10px] font-bold bg-indigo-100 text-indigo-800">
-                      {emp.late_count}x
-                    </span>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-[11px] font-semibold text-slate-700 truncate">{emp.employee_name}</p>
+                      <p className="text-[9px] text-slate-400">{emp.department}</p>
+                    </div>
+                    <FreqBadge count={emp.late_count} type="late" />
                   </div>
                 ))}
               </div>
             )}
-          </div>
+          </AlertCard>
+
         </div>
       )}
     </div>

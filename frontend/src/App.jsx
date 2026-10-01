@@ -40,7 +40,7 @@ function MainApp() {
   };
 
   return (
-    <div className="flex h-screen bg-slate-100 overflow-hidden font-sans">
+    <div className="flex h-screen bg-slate-50 overflow-hidden" style={{ fontFamily: "'Inter', system-ui, sans-serif" }}>
       {/* Sidebar Navigation with Mobile Drawer Support */}
       <Sidebar
         activeTab={activeTab}

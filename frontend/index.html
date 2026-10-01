@@ -18,15 +18,30 @@
     <script type="module" src="/src/main.jsx"></script>
     <script>
       if ('serviceWorker' in navigator && window.location.protocol.startsWith('http')) {
-        window.addEventListener('load', () => {
-          navigator.serviceWorker.register('/sw.js')
-            .then((registration) => {
-              console.log('Planotech PWA ServiceWorker registered with scope:', registration.scope);
-            })
-            .catch((error) => {
-              console.warn('Planotech PWA ServiceWorker registration failed:', error);
-            });
-        });
+        const isLocalhost = Boolean(
+          window.location.hostname === 'localhost' ||
+          window.location.hostname === '[::1]' ||
+          window.location.hostname.match(/^127(?:\.(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)){3}$/)
+        );
+
+        if (isLocalhost) {
+          // Unregister any active service worker during localhost dev to prevent stale cache/blank screens
+          navigator.serviceWorker.getRegistrations().then((registrations) => {
+            for (const registration of registrations) {
+              registration.unregister();
+            }
+          });
+        } else {
+          window.addEventListener('load', () => {
+            navigator.serviceWorker.register('/sw.js')
+              .then((registration) => {
+                console.log('Planotech PWA ServiceWorker registered with scope:', registration.scope);
+              })
+              .catch((error) => {
+                console.warn('Planotech PWA ServiceWorker registration failed:', error);
+              });
+          });
+        }
       }
     </script>
   </body>
