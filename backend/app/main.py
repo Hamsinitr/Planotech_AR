@@ -92,6 +92,7 @@ def init_db_defaults():
         db.close()
 
 from fastapi.responses import FileResponse
+from fastapi.staticfiles import StaticFiles
 from app.config import settings, BASE_DIR
 
 frontend_dist = BASE_DIR.parent / "frontend" / "dist"
