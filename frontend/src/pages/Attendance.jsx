@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Search, Clock, Users, CheckCircle, XCircle, AlertTriangle } from 'lucide-react';
+import { Search, Clock, Users, CheckCircle, XCircle, AlertTriangle, MapPin, ArrowUpDown, Filter } from 'lucide-react';
 import api from '../api/client';
 import StatusBadge from '../components/Common/StatusBadge';
 
@@ -26,7 +26,9 @@ function aggregateByEmployee(records) {
         late_days: 0,
         on_time_days: 0,
         grace_days: 0,
+        out_of_location_days: 0,
         dates_late: [],
+        dates_out_of_location: [],
       };
     }
     map[key].total_days++;
@@ -41,19 +43,26 @@ function aggregateByEmployee(records) {
     } else if (r.late_status?.includes('Grace')) {
       map[key].grace_days++;
     }
+
+    // Check Out of Location
+    const ool = r.out_of_location ? String(r.out_of_location).trim().toLowerCase() : '';
+    if (ool && !['no', '0', 'false', 'none', '', 'null'].includes(ool)) {
+      map[key].out_of_location_days++;
+      map[key].dates_out_of_location.push(r.date);
+    }
   }
-  return Object.values(map).sort((a, b) => b.late_days - a.late_days);
+  return Object.values(map).sort((a, b) => (b.late_days + b.out_of_location_days) - (a.late_days + a.out_of_location_days));
 }
 
 const FreqBar = ({ value, max, color }) => (
   <div className="flex items-center gap-2">
-    <div className="w-16 bg-slate-100 rounded-full h-1.5 overflow-hidden">
+    <div className="w-14 bg-slate-100 rounded-full h-1.5 overflow-hidden">
       <div
-        className="h-full rounded-full"
+        className="h-full rounded-full transition-all duration-300"
         style={{ width: `${max > 0 ? Math.min(100, (value / max) * 100) : 0}%`, background: color }}
       />
     </div>
-    <span className="text-[11px] font-bold text-slate-600">{value}</span>
+    <span className="text-[11px] font-bold text-slate-700">{value}</span>
   </div>
 );
 
@@ -101,6 +110,7 @@ export const Attendance = ({ selectedDate, onSelectEmployee }) => {
   const [deptFilter, setDeptFilter] = useState('All');
   const [statusFilter, setStatusFilter] = useState('All');
   const [lateFilter, setLateFilter] = useState('All');
+  const [sortBy, setSortBy] = useState('late_days'); // 'late_days' | 'out_of_location' | 'absent_days' | 'name'
   const [search, setSearch] = useState('');
 
   const fetchAttendance = async () => {
@@ -125,6 +135,16 @@ export const Attendance = ({ selectedDate, onSelectEmployee }) => {
   const isMonthly = isMonthlyData(details);
   const aggregated = isMonthly ? aggregateByEmployee(details) : null;
   const maxLate = aggregated ? Math.max(...aggregated.map(r => r.late_days), 1) : 1;
+  const maxLocation = aggregated ? Math.max(...aggregated.map(r => r.out_of_location_days), 1) : 1;
+
+  // Sort aggregated data
+  const sortedAggregated = aggregated ? [...aggregated].sort((a, b) => {
+    if (sortBy === 'late_days') return b.late_days - a.late_days;
+    if (sortBy === 'out_of_location') return b.out_of_location_days - a.out_of_location_days;
+    if (sortBy === 'absent_days') return b.absent_days - a.absent_days;
+    if (sortBy === 'name') return a.employee_name.localeCompare(b.employee_name);
+    return 0;
+  }) : [];
 
   const depts = ['All', ...new Set(details.map(r => r.department).filter(Boolean))];
   const statuses = ['All', 'Present', 'Absent'];
@@ -137,7 +157,7 @@ export const Attendance = ({ selectedDate, onSelectEmployee }) => {
         <h2 className="page-title">Attendance Analysis</h2>
         <p className="text-xs text-slate-500 mt-1">
           {isMonthly
-            ? 'Monthly view — showing each employee once with frequency counts of late arrivals'
+            ? 'Monthly frequency view — each employee listed once with recurring late punch-ins and location violations'
             : `Punch-in classification, department breakdowns, and reconciliation for ${selectedDate}`}
         </p>
       </div>
@@ -183,7 +203,7 @@ export const Attendance = ({ selectedDate, onSelectEmployee }) => {
             </h3>
             <p className="text-[11px] text-slate-400 mt-0.5">
               {isMonthly
-                ? `${aggregated?.length || 0} unique employees · sorted by most late arrivals`
+                ? `${aggregated?.length || 0} unique employees · aggregated without redundant daily repetitions`
                 : `${details.length} records for ${selectedDate}`}
             </p>
           </div>
@@ -202,7 +222,14 @@ export const Attendance = ({ selectedDate, onSelectEmployee }) => {
             <select value={deptFilter} onChange={(e) => setDeptFilter(e.target.value)} className="pro-input text-xs">
               {depts.map(d => <option key={d} value={d}>{d === 'All' ? 'All Departments' : d}</option>)}
             </select>
-            {!isMonthly && (
+            {isMonthly ? (
+              <select value={sortBy} onChange={(e) => setSortBy(e.target.value)} className="pro-input text-xs">
+                <option value="late_days">Sort by: Most Late</option>
+                <option value="out_of_location">Sort by: Out of Location</option>
+                <option value="absent_days">Sort by: Most Absent</option>
+                <option value="name">Sort by: Name (A-Z)</option>
+              </select>
+            ) : (
               <>
                 <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)} className="pro-input text-xs">
                   {statuses.map(s => <option key={s} value={s}>{s === 'All' ? 'All Statuses' : s}</option>)}
@@ -229,20 +256,24 @@ export const Attendance = ({ selectedDate, onSelectEmployee }) => {
                   <th className="text-right">On Time</th>
                   <th className="text-right">Grace</th>
                   <th>Late Arrivals</th>
-                  <th>Risk</th>
+                  <th>Out of Location</th>
+                  <th>Risk Level</th>
                 </tr>
               </thead>
               <tbody>
-                {aggregated
+                {sortedAggregated
                   .filter(r => deptFilter === 'All' || r.department === deptFilter)
                   .filter(r => !search || r.employee_name.toLowerCase().includes(search.toLowerCase()))
                   .map((emp, i) => {
-                    const risk = emp.late_days >= 5 ? 'high' : emp.late_days >= 2 ? 'medium' : 'low';
+                    const lateRisk = emp.late_days >= 5 ? 'high' : emp.late_days >= 2 ? 'medium' : 'low';
+                    const locRisk = emp.out_of_location_days >= 5 ? 'high' : emp.out_of_location_days >= 2 ? 'medium' : 'low';
+                    const overallRisk = (lateRisk === 'high' || locRisk === 'high') ? 'high' : (lateRisk === 'medium' || locRisk === 'medium') ? 'medium' : 'low';
+
                     return (
                       <tr
                         key={i}
                         onClick={() => onSelectEmployee && onSelectEmployee(emp.employee_name)}
-                        className={`cursor-pointer ${emp.late_days >= 5 ? 'freq-row-high' : emp.late_days >= 2 ? 'freq-row-medium' : ''}`}
+                        className={`cursor-pointer ${overallRisk === 'high' ? 'freq-row-high' : overallRisk === 'medium' ? 'freq-row-medium' : ''}`}
                       >
                         <td className="font-mono text-slate-400">{i + 1}</td>
                         <td>
@@ -257,17 +288,20 @@ export const Attendance = ({ selectedDate, onSelectEmployee }) => {
                         <td className="text-right text-sky-600 font-semibold">{emp.on_time_days}</td>
                         <td className="text-right text-indigo-500">{emp.grace_days}</td>
                         <td>
-                          <FreqBar value={emp.late_days} max={maxLate} color={risk === 'high' ? '#ef4444' : risk === 'medium' ? '#f59e0b' : '#94a3b8'} />
+                          <FreqBar value={emp.late_days} max={maxLate} color={lateRisk === 'high' ? '#ef4444' : lateRisk === 'medium' ? '#f59e0b' : '#94a3b8'} />
                         </td>
                         <td>
-                          {risk === 'high' && (
-                            <span className="freq-badge freq-badge-red">High</span>
+                          <FreqBar value={emp.out_of_location_days} max={maxLocation} color={locRisk === 'high' ? '#e11d48' : locRisk === 'medium' ? '#f43f5e' : '#94a3b8'} />
+                        </td>
+                        <td>
+                          {overallRisk === 'high' && (
+                            <span className="freq-badge freq-badge-red">High Risk</span>
                           )}
-                          {risk === 'medium' && (
-                            <span className="freq-badge freq-badge-amber">Med</span>
+                          {overallRisk === 'medium' && (
+                            <span className="freq-badge freq-badge-amber">Medium</span>
                           )}
-                          {risk === 'low' && (
-                            <span className="freq-badge freq-badge-blue">Low</span>
+                          {overallRisk === 'low' && (
+                            <span className="freq-badge freq-badge-blue">Normal</span>
                           )}
                         </td>
                       </tr>
@@ -290,12 +324,13 @@ export const Attendance = ({ selectedDate, onSelectEmployee }) => {
                   <th>Punch Out</th>
                   <th>Attendance</th>
                   <th>Punctuality</th>
+                  <th>Location Status</th>
                 </tr>
               </thead>
               <tbody>
                 {details.length === 0 ? (
                   <tr>
-                    <td colSpan="8" className="text-center py-12 text-slate-400">
+                    <td colSpan="9" className="text-center py-12 text-slate-400">
                       No attendance records found for the selected filters.
                     </td>
                   </tr>
@@ -314,6 +349,13 @@ export const Attendance = ({ selectedDate, onSelectEmployee }) => {
                       <td className="text-slate-400">{row.punch_out_time || '—'}</td>
                       <td><StatusBadge status={row.attendance_status} /></td>
                       <td><StatusBadge status={row.late_status} /></td>
+                      <td>
+                        {row.out_of_location ? (
+                          <StatusBadge status={['yes', '1', 'true', 'out of location', 'location violation'].includes(String(row.out_of_location).toLowerCase()) ? 'Out of Location' : 'In Location'} />
+                        ) : (
+                          <span className="text-slate-300 text-xs">—</span>
+                        )}
+                      </td>
                     </tr>
                   ))
                 )}

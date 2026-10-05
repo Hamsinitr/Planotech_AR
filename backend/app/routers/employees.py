@@ -74,6 +74,7 @@ def get_employee_history(
     absent_days = sum(1 for a in att_records if a.attendance_status in ["Absent", "Leave", "Not Punched In"])
     late_days = sum(1 for a in att_records if a.late_status == "Late")
     on_time_days = sum(1 for a in att_records if a.late_status == "On Time")
+    out_of_location_days = sum(1 for a in att_records if a.out_of_location and str(a.out_of_location).strip().lower() not in ["no", "0", "false", "", "none"])
 
     reports_submitted = sum(1 for r in rep_records if r.report_status == "Submitted")
     reports_unsubmitted = sum(1 for r in rep_records if r.report_status == "Not Submitted")
@@ -115,6 +116,7 @@ def get_employee_history(
             "absent_days": absent_days,
             "late_days": late_days,
             "on_time_days": on_time_days,
+            "out_of_location_days": out_of_location_days,
             "attendance_rate": round(present_days / total_days * 100, 1) if total_days > 0 else 0.0,
             "reports_submitted": reports_submitted,
             "reports_unsubmitted": reports_unsubmitted,

@@ -17,6 +17,7 @@ class AttendanceRecord(Base):
     late_status = Column(String(50), index=True, nullable=False)        # On Time, Grace (9:30-9:45), Late, Not Punched In, Absent
     time_category = Column(String(50), index=True, nullable=False)      # Before 9:30 AM, 9:30 AM–9:45 AM, After 9:45 AM, Not Punched In, Absent
     source_file = Column(String(255), nullable=True)
+    out_of_location = Column(String(50), nullable=True)  # Yes, No, or None
     uploaded_at = Column(DateTime, default=datetime.utcnow)
 
     __table_args__ = (

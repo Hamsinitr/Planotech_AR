@@ -45,6 +45,7 @@ class ColumnMapping(BaseModel):
     punch_in_time: Optional[str] = None
     punch_out_time: Optional[str] = None
     attendance_status: Optional[str] = None
+    out_of_location: Optional[str] = None
     report_status: Optional[str] = None
     quality_rating: Optional[str] = None
     notes: Optional[str] = None

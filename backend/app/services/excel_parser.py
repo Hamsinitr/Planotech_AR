@@ -12,6 +12,7 @@ COLUMN_SYNONYMS = {
     "punch_in_time": ["punch in", "in time", "punch in time", "check in", "check-in", "signin", "login time", "in", "punch_in"],
     "punch_out_time": ["punch out", "out time", "punch out time", "check out", "check-out", "signout", "logout time", "out", "punch_out"],
     "attendance_status": ["attendance status", "status", "attendance", "present status", "att status", "att_status"],
+    "out_of_location": ["out of location", "out_of_location", "out location", "location status", "location violation"],
     # report_submitted is checked FIRST (higher priority) — maps 'Report Submitted' Yes/No column
     "report_submitted": ["report submitted", "report_submitted", "is submitted", "submission status"],
     "report_status": ["report status", "work status"],
@@ -158,6 +159,7 @@ def parse_excel_file(file_contents: bytes, custom_mapping: Optional[Dict[str, st
         punch_out = parse_time_value(row[mapping["punch_out_time"]]) if mapping.get("punch_out_time") else None
 
         att_status = str(row[mapping["attendance_status"]]).strip() if mapping.get("attendance_status") and not pd.isna(row[mapping["attendance_status"]]) else None
+        out_of_loc = str(row[mapping["out_of_location"]]).strip() if mapping.get("out_of_location") and not pd.isna(row[mapping["out_of_location"]]) else None
         rep_submitted_raw = None
         if mapping.get("report_submitted"):
             val = row[mapping["report_submitted"]]
@@ -176,6 +178,7 @@ def parse_excel_file(file_contents: bytes, custom_mapping: Optional[Dict[str, st
             "punch_in_time": time_to_str(punch_in),
             "punch_out_time": time_to_str(punch_out),
             "attendance_status": att_status,
+            "out_of_location": out_of_loc,
             "report_status": rep_status,
             "report_submitted": rep_submitted_raw,  # raw 'yes'/'no' from dedicated column if present
             "quality_rating": quality,

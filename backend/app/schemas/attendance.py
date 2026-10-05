@@ -12,6 +12,7 @@ class AttendanceRecordOut(BaseModel):
     attendance_status: str
     late_status: str
     time_category: str
+    out_of_location: Optional[str] = None
 
     class Config:
         from_attributes = True

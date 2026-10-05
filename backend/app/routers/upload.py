@@ -147,6 +147,7 @@ async def process_daily_files(
             "attendance_status": att_status,
             "late_status": late_status,
             "time_category": time_cat,
+            "out_of_location": row.get("out_of_location"),
             "source_file": attendance_file.filename
         }
         attendance_processed.append(item)
@@ -301,6 +302,7 @@ async def process_daily_files(
             attendance_status=a["attendance_status"],
             late_status=a["late_status"],
             time_category=a["time_category"],
+            out_of_location=a.get("out_of_location"),
             source_file=a["source_file"]
         ))
 

@@ -19,6 +19,12 @@ const BADGE_MAP = {
   'Average':               'bg-amber-50 text-amber-700 border-amber-200',
   'Poor':                  'bg-rose-50 text-rose-700 border-rose-200',
   'N/A':                   'bg-slate-100 text-slate-400 border-slate-200',
+  // Location
+  'Yes':                   'bg-rose-50 text-rose-700 border-rose-200',
+  'No':                    'bg-emerald-50 text-emerald-700 border-emerald-200',
+  'Out of Location':       'bg-rose-50 text-rose-700 border-rose-200',
+  'Location Violation':    'bg-rose-50 text-rose-700 border-rose-200',
+  'In Location':           'bg-emerald-50 text-emerald-700 border-emerald-200',
 };
 
 const DOTS = {
@@ -30,6 +36,11 @@ const DOTS = {
   'Late':        'bg-amber-500',
   'Not Submitted': 'bg-rose-500',
   'Absent':      'bg-slate-400',
+  'Yes':         'bg-rose-500',
+  'Out of Location': 'bg-rose-500',
+  'Location Violation': 'bg-rose-500',
+  'No':          'bg-emerald-500',
+  'In Location': 'bg-emerald-500',
 };
 
 export const StatusBadge = ({ status }) => {

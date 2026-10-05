@@ -106,7 +106,39 @@ def detect_attention_required_issues(db: Session, target_date: str) -> Dict[str,
         for r in repeated_late_query
     ]
 
-    # 5. Top performers today
+    # 5. Out of Location Today
+    out_of_loc_today = db.query(AttendanceRecord)\
+        .filter(
+            AttendanceRecord.date == target_date,
+            AttendanceRecord.out_of_location.isnot(None),
+            ~func.lower(AttendanceRecord.out_of_location).in_(["no", "0", "false", "", "none"])
+        )\
+        .all()
+    out_of_loc_today_list = [
+        {"employee_name": a.employee_name, "employee_id": a.employee_id, "department": a.department, "location_status": a.out_of_location}
+        for a in out_of_loc_today
+    ]
+
+    # 6. Frequent / Repeated Out of Location Punch-Ins (>= 2 times)
+    repeated_out_of_loc_query = db.query(
+        AttendanceRecord.employee_name,
+        AttendanceRecord.employee_id,
+        AttendanceRecord.department,
+        func.count(AttendanceRecord.id).label("out_of_location_count")
+    ).filter(
+        AttendanceRecord.out_of_location.isnot(None),
+        ~func.lower(AttendanceRecord.out_of_location).in_(["no", "0", "false", "", "none"])
+    )\
+     .group_by(AttendanceRecord.employee_name, AttendanceRecord.employee_id, AttendanceRecord.department)\
+     .having(func.count(AttendanceRecord.id) >= 2)\
+     .all()
+
+    repeated_out_of_loc_list = [
+        {"employee_name": r[0], "employee_id": r[1], "department": r[2], "out_of_location_count": r[3]}
+        for r in repeated_out_of_loc_query
+    ]
+
+    # 7. Top performers today
     top_performers = db.query(ProductivityRecord)\
         .filter(ProductivityRecord.date == target_date, ProductivityRecord.category == "Top Performer")\
         .order_by(ProductivityRecord.productivity_score.desc())\
@@ -121,5 +153,7 @@ def detect_attention_required_issues(db: Session, target_date: str) -> Dict[str,
         "unsubmitted_today": unsubmitted_today_list,
         "repeated_unsubmitted": repeated_unsubmitted_list,
         "repeated_late": repeated_late_list,
+        "out_of_location_today": out_of_loc_today_list,
+        "repeated_out_of_location": repeated_out_of_loc_list,
         "top_performers": top_list
     }
