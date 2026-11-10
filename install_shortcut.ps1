@@ -1,4 +1,4 @@
-﻿# install_shortcut.ps1
+# install_shortcut.ps1
 # Double-click this file (or right-click -> Run with PowerShell) to place
 # the Planotech AR shortcut on your Desktop.
 
@@ -47,3 +47,4 @@ Write-Host "  📍  $lnkPath" -ForegroundColor Cyan
 Write-Host ""
 Write-Host "  Double-click 'Planotech AR' on your Desktop to launch the app." -ForegroundColor White
 Read-Host "  Press Enter to close"
+

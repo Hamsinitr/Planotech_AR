@@ -20,24 +20,43 @@ def normalize_department(dept: Optional[str]) -> str:
     d = str(dept).strip()
     if not d or d.lower() in ["nan", "none", "null", ""]:
         return "General"
-    # Common department abbreviation expansions (check uppercase for matching)
-    d_upper = re.sub(r'[^a-zA-Z0-9]', ' ', d).strip().upper()
-    mapping = {
-        "IT": "Information Technology",
-        "INFO TECH": "Information Technology",
-        "DEV": "Development",
-        "ENG": "Engineering",
-        "HR": "Human Resources",
-        "HRM": "Human Resources",
-        "MKTG": "Marketing",
-        "OPS": "Operations",
-        "MGMT": "Management",
-        "FIN": "Finance",
-        "ADMIN": "Administration",
+
+    # Canonical department name overrides (checked case-insensitively)
+    DEPT_CANONICAL = {
+        "SALES AND MARKETING":    "Sales & Marketing",
+        "SALES & MARKETING":      "Sales & Marketing",
+        "OPERATIONS SUPPORT":     "Operations Support",
+        "OPERATIONS-SUPPORT":     "Operations Support",
+        "OPERATIONS - SUPPORT":   "Operations Support",
+        "INFORMATION TECHNOLOGY": "Information Technology",
+        "FINANCE & ACCOUNTS":     "Finance & Accounts",
+        "FINANCE AND ACCOUNTS":   "Finance & Accounts",
+        "HUMAN RESOURCES":        "Human Resources",
     }
-    if d_upper in mapping:
-        return mapping[d_upper]
-    # Title-case the original department name for consistent display
+    # Common abbreviation expansions
+    ABBR_MAP = {
+        "IT":     "Information Technology",
+        "INFO TECH": "Information Technology",
+        "DEV":    "Development",
+        "ENG":    "Engineering",
+        "HR":     "Human Resources",
+        "HRM":    "Human Resources",
+        "MKTG":   "Marketing",
+        "OPS":    "Operations",
+        "MGMT":   "Management",
+        "FIN":    "Finance",
+        "ADMIN":  "Administration",
+    }
+
+    d_key = re.sub(r'\s+', ' ', d).strip().upper()
+    if d_key in DEPT_CANONICAL:
+        return DEPT_CANONICAL[d_key]
+
+    d_upper = re.sub(r'[^a-zA-Z0-9]', ' ', d).strip().upper()
+    if d_upper in ABBR_MAP:
+        return ABBR_MAP[d_upper]
+
+    # Title-case the original for consistent display
     return d.strip().title()
 
 

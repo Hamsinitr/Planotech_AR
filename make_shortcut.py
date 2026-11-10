@@ -70,3 +70,4 @@ else:
     print("❌ Shortcut file not created by PowerShell")
 
 shutil.rmtree(str(tmp_dir), ignore_errors=True)
+

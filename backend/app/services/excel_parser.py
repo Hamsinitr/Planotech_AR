@@ -161,10 +161,23 @@ def parse_excel_file(file_contents: bytes, custom_mapping: Optional[Dict[str, st
             raise ValueError("Required employee name column could not be detected. Please provide a column mapping.")
 
 
+    # Names that are summary rows or system accounts — always skip
+    SKIP_NAMES = {
+        "total", "grand total", "sub total", "subtotal",
+        "admin", "hr", "testaccount", "test account",
+        "nan", "none", "null", "n/a", "na", "-", "",
+    }
+
     results = []
     for _, row in df.iterrows():
         emp_name = safe_str(row[mapping["employee_name"]]) if mapping.get("employee_name") else None
-        if not emp_name or emp_name.lower() in ["total", "nan", "none", "grand total", "sub total", ""]:
+        if not emp_name:
+            continue
+        # Skip summary / junk rows
+        if emp_name.lower().strip() in SKIP_NAMES:
+            continue
+        # Skip rows where the name looks like a numeric count or single char
+        if len(emp_name.strip()) < 2:
             continue
 
         emp_id = safe_str(row[mapping["employee_id"]]) if mapping.get("employee_id") else None
