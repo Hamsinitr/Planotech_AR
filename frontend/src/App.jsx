@@ -14,6 +14,7 @@ import UploadHistory from './pages/UploadHistory';
 import Settings from './pages/Settings';
 import EmployeeDetailModal from './components/Common/EmployeeDetailModal';
 import InstallPrompt from './components/Common/InstallPrompt';
+import BottomNav from './components/Layout/BottomNav';
 
 function MainApp() {
   const { user } = useAuth();
@@ -41,7 +42,7 @@ function MainApp() {
 
   return (
     <div className="flex h-screen bg-slate-50 overflow-hidden" style={{ fontFamily: "'Inter', system-ui, sans-serif" }}>
-      {/* Sidebar Navigation with Mobile Drawer Support */}
+      {/* Sidebar Navigation (Desktop) */}
       <Sidebar
         activeTab={activeTab}
         setActiveTab={setActiveTab}
@@ -50,7 +51,7 @@ function MainApp() {
       />
 
       {/* Main Content Area */}
-      <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
+      <div className="flex-1 flex flex-col min-w-0 overflow-hidden relative">
         <Header
           key={`header-${refreshKey}`}
           activeTab={activeTab}
@@ -60,7 +61,7 @@ function MainApp() {
           onToggleSidebar={() => setSidebarOpen(!sidebarOpen)}
         />
 
-        <main className="flex-1 overflow-y-auto bg-slate-50">
+        <main className="flex-1 overflow-y-auto bg-slate-50 pb-24 md:pb-8">
           <div className="max-w-7xl mx-auto p-3 sm:p-6 lg:p-8" key={`content-${selectedDate}-${refreshKey}`}>
             {activeTab === 'dashboard' && (
               <Dashboard
@@ -99,6 +100,9 @@ function MainApp() {
             {activeTab === 'settings' && <Settings />}
           </div>
         </main>
+
+        {/* Instagram Mobile Bottom Navigation Bar */}
+        <BottomNav activeTab={activeTab} setActiveTab={setActiveTab} />
       </div>
 
       {/* Employee Detail Slide-over / Modal */}

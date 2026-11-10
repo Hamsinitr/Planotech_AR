@@ -1,20 +1,20 @@
 @echo off
-echo ========================================================
-echo Starting Planotech AR Platform (Backend & Frontend)
-echo ========================================================
+:: Planotech AR – Silent Launcher
+:: Runs launch.py with pythonw.exe so zero CMD windows appear in the taskbar.
+:: Double-click this file or pin the shortcut created by create_shortcut.ps1
 
-echo Starting Backend Server on http://localhost:8000 ...
-start "Planotech Backend" cmd /k "cd /d %~dp0backend && python -m uvicorn app.main:app --reload --port 8000"
+set "SCRIPT_DIR=%~dp0"
+set "LAUNCH=%SCRIPT_DIR%launch.py"
 
-timeout /t 3 /nobreak >nul
+:: Try pythonw first (no console window at all)
+where pythonw >nul 2>&1
+if %ERRORLEVEL%==0 (
+    start "" pythonw "%LAUNCH%"
+    goto :eof
+)
 
-echo Starting Frontend Server on http://localhost:5173 ...
-start "Planotech Frontend" cmd /k "cd /d %~dp0frontend && npm run dev"
-
-echo.
-echo ========================================================
-echo Applications launched!
-echo Frontend: http://localhost:5173
-echo Backend API Docs: http://localhost:8000/api/docs
-echo Admin Login: admin@planotech.com / admin123
-echo ========================================================
+:: Fallback: python via vbscript trick to hide the window
+set "VBS=%TEMP%\planotech_launch.vbs"
+echo Set WshShell = CreateObject("WScript.Shell") > "%VBS%"
+echo WshShell.Run "python ""%LAUNCH%""", 0, False >> "%VBS%"
+wscript //nologo "%VBS%"

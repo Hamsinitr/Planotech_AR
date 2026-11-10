@@ -66,7 +66,7 @@ export default function InstallPrompt() {
   if (!showPrompt) return null;
 
   return (
-    <div className="fixed bottom-4 left-4 right-4 md:left-auto md:right-6 md:w-96 z-50 animate-in fade-in slide-in-from-bottom duration-300">
+    <div className="fixed bottom-20 left-4 right-4 md:bottom-4 md:left-auto md:right-6 md:w-96 z-50 animate-in fade-in slide-in-from-bottom duration-300">
       <div className="bg-slate-900/95 backdrop-blur-md text-white rounded-2xl p-4 shadow-2xl border border-slate-700/60 flex flex-col gap-3">
         <div className="flex items-start justify-between">
           <div className="flex items-center gap-3">

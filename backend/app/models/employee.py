@@ -6,9 +6,9 @@ class Employee(Base):
     __tablename__ = "employees"
 
     id = Column(Integer, primary_key=True, index=True)
-    employee_id = Column(String(100), unique=True, index=True, nullable=True)
+    employee_id = Column(String(100), index=True, nullable=True)  # Not unique: same emp may have different IDs across files
     name = Column(String(255), index=True, nullable=False)
-    normalized_name = Column(String(255), index=True, nullable=False)
+    normalized_name = Column(String(255), unique=True, index=True, nullable=False)  # normalized_name is the true unique key
     department = Column(String(255), index=True, nullable=False)
     designation = Column(String(255), nullable=True)
     email = Column(String(255), nullable=True)

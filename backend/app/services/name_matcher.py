@@ -14,22 +14,32 @@ def normalize_string(val: Optional[str]) -> str:
     return s.strip().upper()
 
 def normalize_department(dept: Optional[str]) -> str:
-    """Normalize department name."""
+    """Normalize department name preserving readable title case."""
     if not dept:
-        return "GENERAL"
-    d = normalize_string(dept)
-    # Common department aliases
+        return "General"
+    d = str(dept).strip()
+    if not d or d.lower() in ["nan", "none", "null", ""]:
+        return "General"
+    # Common department abbreviation expansions (check uppercase for matching)
+    d_upper = re.sub(r'[^a-zA-Z0-9]', ' ', d).strip().upper()
     mapping = {
-        "IT": "INFORMATION TECHNOLOGY",
-        "INFO TECH": "INFORMATION TECHNOLOGY",
-        "DEV": "DEVELOPMENT",
-        "ENG": "ENGINEERING",
-        "HR": "HUMAN RESOURCES",
-        "HRM": "HUMAN RESOURCES",
-        "MKTG": "MARKETING",
-        "OPS": "OPERATIONS"
+        "IT": "Information Technology",
+        "INFO TECH": "Information Technology",
+        "DEV": "Development",
+        "ENG": "Engineering",
+        "HR": "Human Resources",
+        "HRM": "Human Resources",
+        "MKTG": "Marketing",
+        "OPS": "Operations",
+        "MGMT": "Management",
+        "FIN": "Finance",
+        "ADMIN": "Administration",
     }
-    return mapping.get(d, d)
+    if d_upper in mapping:
+        return mapping[d_upper]
+    # Title-case the original department name for consistent display
+    return d.strip().title()
+
 
 def match_employee_record(
     emp_id: Optional[str],

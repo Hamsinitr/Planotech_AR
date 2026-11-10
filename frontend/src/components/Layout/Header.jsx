@@ -8,16 +8,20 @@ export const Header = ({ activeTab, selectedDate, setSelectedDate, onRefresh, on
   const [availableDates, setAvailableDates] = useState([]);
   const [downloading, setDownloading] = useState(false);
 
-  useEffect(() => {
+  const loadDates = () => {
     api.get('/upload-history')
       .then((res) => {
-        const dates = res.data.map((h) => h.date);
+        const dates = [...new Set(res.data.map((h) => h.date))].sort().reverse();
         setAvailableDates(dates);
         if (!selectedDate && dates.length > 0) {
           setSelectedDate(dates[0]);
         }
       })
       .catch((err) => console.error(err));
+  };
+
+  useEffect(() => {
+    loadDates();
   }, []);
 
   const handleDownloadExcel = async () => {

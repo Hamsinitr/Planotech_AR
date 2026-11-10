@@ -1,16 +1,13 @@
-import React, { useEffect, useState } from 'react';
-import { Search, Clock, Users, CheckCircle, XCircle, AlertTriangle, MapPin, ArrowUpDown, Filter } from 'lucide-react';
+import React, { useEffect, useState, useCallback } from 'react';
+import { Search, Clock, Activity } from 'lucide-react';
 import api from '../api/client';
 import StatusBadge from '../components/Common/StatusBadge';
 
-// ─── Smart detection: are multiple dates loaded? (monthly data)
 function isMonthlyData(records) {
   if (!records || records.length === 0) return false;
-  const uniqueDates = new Set(records.map(r => r.date));
-  return uniqueDates.size > 1;
+  return new Set(records.map(r => r.date)).size > 1;
 }
 
-// ─── Aggregate multiple rows per employee into a single frequency row
 function aggregateByEmployee(records) {
   const map = {};
   for (const r of records) {
@@ -27,77 +24,47 @@ function aggregateByEmployee(records) {
         on_time_days: 0,
         grace_days: 0,
         out_of_location_days: 0,
-        dates_late: [],
-        dates_out_of_location: [],
       };
     }
-    map[key].total_days++;
-    if (r.attendance_status === 'Present') map[key].present_days++;
-    else map[key].absent_days++;
+    const e = map[key];
+    e.total_days++;
+    if (r.attendance_status === 'Present') e.present_days++;
+    else e.absent_days++;
 
-    if (r.late_status === 'Late') {
-      map[key].late_days++;
-      map[key].dates_late.push(r.date);
-    } else if (r.late_status === 'On Time') {
-      map[key].on_time_days++;
-    } else if (r.late_status?.includes('Grace')) {
-      map[key].grace_days++;
-    }
+    if (r.late_status === 'Late') e.late_days++;
+    else if (r.late_status === 'On Time') e.on_time_days++;
+    else if (r.late_status?.includes('Grace')) e.grace_days++;
 
-    // Check Out of Location
     const ool = r.out_of_location ? String(r.out_of_location).trim().toLowerCase() : '';
-    if (ool && !['no', '0', 'false', 'none', '', 'null'].includes(ool)) {
-      map[key].out_of_location_days++;
-      map[key].dates_out_of_location.push(r.date);
+    if (ool && !['no', '0', 'false', 'none', '', 'null', 'n/a'].includes(ool)) {
+      e.out_of_location_days++;
     }
   }
   return Object.values(map).sort((a, b) => (b.late_days + b.out_of_location_days) - (a.late_days + a.out_of_location_days));
 }
 
-const FreqBar = ({ value, max, color }) => (
+const MiniBar = ({ value, max, color }) => (
   <div className="flex items-center gap-2">
-    <div className="w-14 bg-slate-100 rounded-full h-1.5 overflow-hidden">
+    <div className="w-16 bg-slate-100 rounded-full h-1.5 overflow-hidden flex-shrink-0">
       <div
-        className="h-full rounded-full transition-all duration-300"
+        className="h-full rounded-full"
         style={{ width: `${max > 0 ? Math.min(100, (value / max) * 100) : 0}%`, background: color }}
       />
     </div>
-    <span className="text-[11px] font-bold text-slate-700">{value}</span>
+    <span className="text-[11px] font-bold text-slate-700 w-4 text-right">{value}</span>
   </div>
 );
 
-const SummaryTable = ({ title, subtitle, data, columns }) => (
+const SummaryPanel = ({ title, subtitle, children }) => (
   <div className="chart-card overflow-hidden">
-    <div className="px-5 py-4 border-b border-slate-100 flex items-center justify-between" style={{ background: 'linear-gradient(135deg, #080c1a, #162038)' }}>
+    <div className="px-5 py-3.5 border-b border-slate-100 flex items-center gap-2.5"
+      style={{ background: 'linear-gradient(135deg, #0f172a, #1e293b)' }}>
       <div>
         <h3 className="text-xs font-bold text-white tracking-wide">{title}</h3>
         <p className="text-[10px] text-slate-400 mt-0.5">{subtitle}</p>
       </div>
     </div>
-    <div className="overflow-x-auto">
-      <table className="w-full pro-table">
-        <thead>
-          <tr>
-            {columns.map(c => (
-              <th key={c.key} className={c.right ? 'text-right' : ''}>{c.label}</th>
-            ))}
-          </tr>
-        </thead>
-        <tbody>
-          {data?.map((row, i) => (
-            <tr key={i} className={i % 2 === 0 ? '' : 'bg-slate-50/50'}>
-              {columns.map(c => (
-                <td key={c.key} className={c.right ? 'text-right' : ''}>
-                  {c.render ? c.render(row[c.key], row) : (
-                    <span className={c.colorFn ? c.colorFn(row[c.key]) : ''}>{row[c.key]}</span>
-                  )}
-                </td>
-              ))}
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
+    <div className="overflow-x-auto">{children}</div>
   </div>
 );
 
@@ -105,15 +72,13 @@ export const Attendance = ({ selectedDate, onSelectEmployee }) => {
   const [summary, setSummary] = useState(null);
   const [details, setDetails] = useState([]);
   const [loading, setLoading] = useState(true);
-
-  // Filters
   const [deptFilter, setDeptFilter] = useState('All');
   const [statusFilter, setStatusFilter] = useState('All');
   const [lateFilter, setLateFilter] = useState('All');
-  const [sortBy, setSortBy] = useState('late_days'); // 'late_days' | 'out_of_location' | 'absent_days' | 'name'
+  const [sortBy, setSortBy] = useState('late_days');
   const [search, setSearch] = useState('');
 
-  const fetchAttendance = async () => {
+  const fetchAttendance = useCallback(async () => {
     if (!selectedDate) return;
     setLoading(true);
     try {
@@ -128,181 +93,245 @@ export const Attendance = ({ selectedDate, onSelectEmployee }) => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [selectedDate, deptFilter, statusFilter, lateFilter, search]);
 
-  useEffect(() => { fetchAttendance(); }, [selectedDate, deptFilter, statusFilter, lateFilter, search]);
+  useEffect(() => {
+    fetchAttendance();
+  }, [fetchAttendance]);
+
+  if (!selectedDate) {
+    return (
+      <div className="empty-state p-12">
+        <div className="empty-state-icon"><Activity className="w-7 h-7 text-slate-400" /></div>
+        <h3 className="text-sm font-bold text-slate-700">Select a date to view attendance</h3>
+      </div>
+    );
+  }
+
+  if (loading) {
+    return (
+      <div className="p-6 space-y-4 animate-pulse-soft">
+        <div className="shimmer h-8 w-64 rounded-lg" />
+        <div className="grid grid-cols-2 gap-4">
+          <div className="shimmer h-48 rounded-2xl" />
+          <div className="shimmer h-48 rounded-2xl" />
+        </div>
+        <div className="shimmer h-64 rounded-2xl" />
+      </div>
+    );
+  }
 
   const isMonthly = isMonthlyData(details);
   const aggregated = isMonthly ? aggregateByEmployee(details) : null;
   const maxLate = aggregated ? Math.max(...aggregated.map(r => r.late_days), 1) : 1;
-  const maxLocation = aggregated ? Math.max(...aggregated.map(r => r.out_of_location_days), 1) : 1;
+  const maxLoc  = aggregated ? Math.max(...aggregated.map(r => r.out_of_location_days), 1) : 1;
 
-  // Sort aggregated data
-  const sortedAggregated = aggregated ? [...aggregated].sort((a, b) => {
-    if (sortBy === 'late_days') return b.late_days - a.late_days;
+  const sortedAgg = aggregated ? [...aggregated].sort((a, b) => {
+    if (sortBy === 'late_days')      return b.late_days - a.late_days;
     if (sortBy === 'out_of_location') return b.out_of_location_days - a.out_of_location_days;
-    if (sortBy === 'absent_days') return b.absent_days - a.absent_days;
-    if (sortBy === 'name') return a.employee_name.localeCompare(b.employee_name);
+    if (sortBy === 'absent_days')    return b.absent_days - a.absent_days;
+    if (sortBy === 'name')           return a.employee_name.localeCompare(b.employee_name);
     return 0;
   }) : [];
 
   const depts = ['All', ...new Set(details.map(r => r.department).filter(Boolean))];
-  const statuses = ['All', 'Present', 'Absent'];
-  const lateStatuses = ['All', 'On Time', 'Grace (9:30-9:45)', 'Late'];
 
   return (
-    <div className="p-6 space-y-6 animate-fade-up">
-      {/* Page Header */}
+    <div className="p-5 space-y-5 animate-fade-up">
+
+      {/* Header */}
       <div>
         <h2 className="page-title">Attendance Analysis</h2>
         <p className="text-xs text-slate-500 mt-1">
           {isMonthly
-            ? 'Monthly frequency view — each employee listed once with recurring late punch-ins and location violations'
-            : `Punch-in classification, department breakdowns, and reconciliation for ${selectedDate}`}
+            ? 'Monthly view — each employee shown once with cumulative late arrivals and location violations'
+            : `Punch-in classification, department breakdowns, and reconciliation · ${selectedDate}`}
         </p>
       </div>
 
       {/* Summary Tables */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        {/* Table 1: Time Brackets */}
-        <SummaryTable
+        <SummaryPanel
           title="Attendance by Time Bracket"
-          subtitle="Before 9:30 · Grace 9:30–9:45 · Late after 9:45"
-          data={[...(summary?.summary_1 || []), summary?.summary_1_total && { ...summary.summary_1_total, department: '─ Total ─' }].filter(Boolean)}
-          columns={[
-            { key: 'department', label: 'Department' },
-            { key: 'total_individuals', label: 'Total', right: true },
-            { key: 'before_930', label: 'Before 9:30', right: true, colorFn: () => 'text-emerald-600 font-semibold' },
-            { key: 'between_930_945', label: 'Grace', right: true, colorFn: () => 'text-sky-600 font-semibold' },
-            { key: 'after_945', label: 'Late', right: true, colorFn: (v) => v > 0 ? 'text-amber-600 font-bold' : 'text-slate-400' },
-          ]}
-        />
+          subtitle="Before 9:30 AM · Grace 9:30–9:45 AM · Late after 9:45 AM"
+        >
+          <table className="w-full pro-table">
+            <thead>
+              <tr>
+                <th>Department</th>
+                <th className="text-right">Total</th>
+                <th className="text-right">Before 9:30</th>
+                <th className="text-right">Grace</th>
+                <th className="text-right">Late</th>
+                <th className="text-right">Absent</th>
+              </tr>
+            </thead>
+            <tbody>
+              {[...(summary?.summary_1 || []), summary?.summary_1_total && { ...summary.summary_1_total, department: 'Total', _isTotal: true }]
+                .filter(Boolean)
+                .map((row, i) => (
+                  <tr key={i} className={row._isTotal ? 'bg-slate-50 font-bold border-t border-slate-200' : ''}>
+                    <td className={`font-${row._isTotal ? 'bold' : 'medium'} text-slate-800`}>
+                      {row._isTotal ? '─ Total ─' : row.department}
+                    </td>
+                    <td className="text-right text-slate-600">{row.total_individuals}</td>
+                    <td className="text-right text-emerald-600 font-semibold">{row.before_930}</td>
+                    <td className="text-right text-sky-600 font-semibold">{row.between_930_945}</td>
+                    <td className={`text-right font-semibold ${row.after_945 > 0 ? 'text-amber-600' : 'text-slate-300'}`}>
+                      {row.after_945}
+                    </td>
+                    <td className={`text-right ${row.not_punched_or_absent > 0 ? 'text-slate-500' : 'text-slate-300'}`}>
+                      {row.not_punched_or_absent}
+                    </td>
+                  </tr>
+                ))}
+            </tbody>
+          </table>
+        </SummaryPanel>
 
-        {/* Table 2: Presence Summary */}
-        <SummaryTable
+        <SummaryPanel
           title="Attendance Status Summary"
-          subtitle="Not punched in · Present · Late punch-in count"
-          data={[...(summary?.summary_2 || []), summary?.summary_2_total && { ...summary.summary_2_total, department: '─ Total ─' }].filter(Boolean)}
-          columns={[
-            { key: 'department', label: 'Department' },
-            { key: 'total_individuals', label: 'Total', right: true },
-            { key: 'not_punched_in', label: 'No Punch', right: true, colorFn: (v) => v > 0 ? 'text-orange-500 font-semibold' : 'text-slate-400' },
-            { key: 'present', label: 'Present', right: true, colorFn: () => 'text-emerald-600 font-semibold' },
-            { key: 'late_punch_in', label: 'Late', right: true, colorFn: (v) => v > 0 ? 'text-amber-600 font-bold' : 'text-slate-400' },
-          ]}
-        />
+          subtitle="Present · Absent / Not punched in · Late punch-in count"
+        >
+          <table className="w-full pro-table">
+            <thead>
+              <tr>
+                <th>Department</th>
+                <th className="text-right">Total</th>
+                <th className="text-right">No Punch</th>
+                <th className="text-right">Present</th>
+                <th className="text-right">Late</th>
+              </tr>
+            </thead>
+            <tbody>
+              {[...(summary?.summary_2 || []), summary?.summary_2_total && { ...summary.summary_2_total, department: 'Total', _isTotal: true }]
+                .filter(Boolean)
+                .map((row, i) => (
+                  <tr key={i} className={row._isTotal ? 'bg-slate-50 font-bold border-t border-slate-200' : ''}>
+                    <td className={`font-${row._isTotal ? 'bold' : 'medium'} text-slate-800`}>
+                      {row._isTotal ? '─ Total ─' : row.department}
+                    </td>
+                    <td className="text-right text-slate-600">{row.total_individuals}</td>
+                    <td className={`text-right ${row.not_punched_in > 0 ? 'text-orange-500 font-semibold' : 'text-slate-300'}`}>
+                      {row.not_punched_in}
+                    </td>
+                    <td className="text-right text-emerald-600 font-semibold">{row.present}</td>
+                    <td className={`text-right ${row.late_punch_in > 0 ? 'text-amber-600 font-semibold' : 'text-slate-300'}`}>
+                      {row.late_punch_in}
+                    </td>
+                  </tr>
+                ))}
+            </tbody>
+          </table>
+        </SummaryPanel>
       </div>
 
-      {/* Employee Detail Section */}
+      {/* Employee Detail Table */}
       <div className="chart-card overflow-hidden">
-        {/* Header + Filters */}
-        <div className="p-5 border-b border-slate-100 flex flex-wrap items-center justify-between gap-3">
+        {/* Filters */}
+        <div className="p-4 border-b border-slate-100 flex flex-wrap items-center justify-between gap-3 bg-white">
           <div>
             <h3 className="text-sm font-bold text-slate-800">
-              {isMonthly ? 'Monthly Frequency Summary (Per Employee)' : 'Employee Attendance Records'}
+              {isMonthly ? 'Monthly Frequency Summary' : 'Employee Attendance Records'}
             </h3>
             <p className="text-[11px] text-slate-400 mt-0.5">
               {isMonthly
-                ? `${aggregated?.length || 0} unique employees · aggregated without redundant daily repetitions`
+                ? `${sortedAgg?.length || 0} unique employees`
                 : `${details.length} records for ${selectedDate}`}
             </p>
           </div>
-
           <div className="flex flex-wrap items-center gap-2">
             <div className="relative">
               <Search className="w-3.5 h-3.5 absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400" />
               <input
                 type="text"
                 value={search}
-                onChange={(e) => setSearch(e.target.value)}
+                onChange={e => setSearch(e.target.value)}
                 placeholder="Search name or ID..."
-                className="pro-input pl-8 text-xs w-44"
+                className="pro-input pl-8 w-44"
               />
             </div>
-            <select value={deptFilter} onChange={(e) => setDeptFilter(e.target.value)} className="pro-input text-xs">
+            <select value={deptFilter} onChange={e => setDeptFilter(e.target.value)} className="pro-input">
               {depts.map(d => <option key={d} value={d}>{d === 'All' ? 'All Departments' : d}</option>)}
             </select>
             {isMonthly ? (
-              <select value={sortBy} onChange={(e) => setSortBy(e.target.value)} className="pro-input text-xs">
-                <option value="late_days">Sort by: Most Late</option>
-                <option value="out_of_location">Sort by: Out of Location</option>
-                <option value="absent_days">Sort by: Most Absent</option>
-                <option value="name">Sort by: Name (A-Z)</option>
+              <select value={sortBy} onChange={e => setSortBy(e.target.value)} className="pro-input">
+                <option value="late_days">Sort: Most Late</option>
+                <option value="out_of_location">Sort: Out of Location</option>
+                <option value="absent_days">Sort: Most Absent</option>
+                <option value="name">Sort: Name A–Z</option>
               </select>
             ) : (
               <>
-                <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)} className="pro-input text-xs">
-                  {statuses.map(s => <option key={s} value={s}>{s === 'All' ? 'All Statuses' : s}</option>)}
+                <select value={statusFilter} onChange={e => setStatusFilter(e.target.value)} className="pro-input">
+                  {['All', 'Present', 'Absent'].map(s =>
+                    <option key={s} value={s}>{s === 'All' ? 'All Statuses' : s}</option>)}
                 </select>
-                <select value={lateFilter} onChange={(e) => setLateFilter(e.target.value)} className="pro-input text-xs">
-                  {lateStatuses.map(l => <option key={l} value={l}>{l === 'All' ? 'All Punctuality' : l}</option>)}
+                <select value={lateFilter} onChange={e => setLateFilter(e.target.value)} className="pro-input">
+                  {['All', 'On Time', 'Grace (9:30-9:45)', 'Late'].map(l =>
+                    <option key={l} value={l}>{l === 'All' ? 'All Punctuality' : l}</option>)}
                 </select>
               </>
             )}
           </div>
         </div>
 
-        {/* ─── MONTHLY VIEW: Frequency Table ─── */}
-        {isMonthly && aggregated ? (
+        {/* Monthly Frequency Table */}
+        {isMonthly && sortedAgg ? (
           <div className="overflow-x-auto">
             <table className="w-full pro-table">
               <thead>
                 <tr>
-                  <th>#</th>
+                  <th className="w-10">#</th>
                   <th>Employee</th>
                   <th>Department</th>
-                  <th className="text-right">Days Present</th>
-                  <th className="text-right">Days Absent</th>
+                  <th className="text-right">Present</th>
+                  <th className="text-right">Absent</th>
                   <th className="text-right">On Time</th>
                   <th className="text-right">Grace</th>
                   <th>Late Arrivals</th>
                   <th>Out of Location</th>
-                  <th>Risk Level</th>
+                  <th>Risk</th>
                 </tr>
               </thead>
               <tbody>
-                {sortedAggregated
+                {sortedAgg
                   .filter(r => deptFilter === 'All' || r.department === deptFilter)
                   .filter(r => !search || r.employee_name.toLowerCase().includes(search.toLowerCase()))
                   .map((emp, i) => {
                     const lateRisk = emp.late_days >= 5 ? 'high' : emp.late_days >= 2 ? 'medium' : 'low';
-                    const locRisk = emp.out_of_location_days >= 5 ? 'high' : emp.out_of_location_days >= 2 ? 'medium' : 'low';
-                    const overallRisk = (lateRisk === 'high' || locRisk === 'high') ? 'high' : (lateRisk === 'medium' || locRisk === 'medium') ? 'medium' : 'low';
-
+                    const locRisk  = emp.out_of_location_days >= 3 ? 'high' : emp.out_of_location_days >= 1 ? 'medium' : 'low';
+                    const risk = (lateRisk === 'high' || locRisk === 'high') ? 'high' : (lateRisk === 'medium' || locRisk === 'medium') ? 'medium' : 'low';
                     return (
                       <tr
                         key={i}
-                        onClick={() => onSelectEmployee && onSelectEmployee(emp.employee_name)}
-                        className={`cursor-pointer ${overallRisk === 'high' ? 'freq-row-high' : overallRisk === 'medium' ? 'freq-row-medium' : ''}`}
+                        onClick={() => onSelectEmployee?.(emp.employee_name)}
+                        className={`cursor-pointer ${risk === 'high' ? 'freq-row-high' : risk === 'medium' ? 'freq-row-medium' : ''}`}
                       >
-                        <td className="font-mono text-slate-400">{i + 1}</td>
+                        <td className="font-mono text-slate-400 text-[11px]">{i + 1}</td>
                         <td>
                           <div>
                             <p className="font-semibold text-slate-800">{emp.employee_name}</p>
-                            <p className="text-[10px] text-slate-400 font-mono">{emp.employee_id || '—'}</p>
+                            <p className="text-[10px] font-mono text-slate-400">{emp.employee_id || '—'}</p>
                           </div>
                         </td>
                         <td className="text-slate-500">{emp.department}</td>
                         <td className="text-right text-emerald-600 font-semibold">{emp.present_days}</td>
                         <td className="text-right text-slate-400">{emp.absent_days}</td>
-                        <td className="text-right text-sky-600 font-semibold">{emp.on_time_days}</td>
-                        <td className="text-right text-indigo-500">{emp.grace_days}</td>
+                        <td className="text-right text-emerald-600">{emp.on_time_days}</td>
+                        <td className="text-right text-sky-600">{emp.grace_days}</td>
                         <td>
-                          <FreqBar value={emp.late_days} max={maxLate} color={lateRisk === 'high' ? '#ef4444' : lateRisk === 'medium' ? '#f59e0b' : '#94a3b8'} />
+                          <MiniBar value={emp.late_days} max={maxLate}
+                            color={lateRisk === 'high' ? '#ef4444' : lateRisk === 'medium' ? '#f59e0b' : '#94a3b8'} />
                         </td>
                         <td>
-                          <FreqBar value={emp.out_of_location_days} max={maxLocation} color={locRisk === 'high' ? '#e11d48' : locRisk === 'medium' ? '#f43f5e' : '#94a3b8'} />
+                          <MiniBar value={emp.out_of_location_days} max={maxLoc}
+                            color={locRisk === 'high' ? '#e11d48' : locRisk === 'medium' ? '#f97316' : '#94a3b8'} />
                         </td>
                         <td>
-                          {overallRisk === 'high' && (
-                            <span className="freq-badge freq-badge-red">High Risk</span>
-                          )}
-                          {overallRisk === 'medium' && (
-                            <span className="freq-badge freq-badge-amber">Medium</span>
-                          )}
-                          {overallRisk === 'low' && (
-                            <span className="freq-badge freq-badge-blue">Normal</span>
-                          )}
+                          <span className={`freq-badge ${risk === 'high' ? 'freq-badge-red' : risk === 'medium' ? 'freq-badge-amber' : 'freq-badge-blue'}`}>
+                            {risk === 'high' ? 'High' : risk === 'medium' ? 'Med' : 'OK'}
+                          </span>
                         </td>
                       </tr>
                     );
@@ -311,7 +340,7 @@ export const Attendance = ({ selectedDate, onSelectEmployee }) => {
             </table>
           </div>
         ) : (
-          /* ─── DAILY VIEW: Individual Records ─── */
+          /* Daily View */
           <div className="overflow-x-auto">
             <table className="w-full pro-table">
               <thead>
@@ -319,46 +348,53 @@ export const Attendance = ({ selectedDate, onSelectEmployee }) => {
                   <th>Employee</th>
                   <th>ID</th>
                   <th>Department</th>
-                  <th>Date</th>
-                  <th>Punch In</th>
-                  <th>Punch Out</th>
-                  <th>Attendance</th>
+                  <th className="text-center">Date</th>
+                  <th className="text-center">Punch In</th>
+                  <th className="text-center">Punch Out</th>
+                  <th>Status</th>
                   <th>Punctuality</th>
-                  <th>Location Status</th>
+                  <th>Location</th>
                 </tr>
               </thead>
               <tbody>
                 {details.length === 0 ? (
                   <tr>
-                    <td colSpan="9" className="text-center py-12 text-slate-400">
-                      No attendance records found for the selected filters.
+                    <td colSpan="9" className="text-center py-16 text-slate-400">
+                      <div className="empty-state">
+                        <div className="empty-state-icon mx-auto">
+                          <Clock className="w-7 h-7 text-slate-300" />
+                        </div>
+                        <p className="text-sm font-medium text-slate-500">No attendance records found</p>
+                        <p className="text-xs text-slate-400 mt-1">Try adjusting the filters or select a different date.</p>
+                      </div>
                     </td>
                   </tr>
-                ) : (
-                  details.map((row) => (
-                    <tr
-                      key={row.id}
-                      onClick={() => onSelectEmployee && onSelectEmployee(row.employee_name)}
-                      className="cursor-pointer"
-                    >
-                      <td className="font-semibold text-slate-800">{row.employee_name}</td>
-                      <td className="font-mono text-slate-400 text-[11px]">{row.employee_id || '—'}</td>
-                      <td className="text-slate-500">{row.department}</td>
-                      <td className="text-slate-400 font-mono text-[11px]">{row.date}</td>
-                      <td className="font-semibold text-slate-700">{row.punch_in_time || '—'}</td>
-                      <td className="text-slate-400">{row.punch_out_time || '—'}</td>
-                      <td><StatusBadge status={row.attendance_status} /></td>
-                      <td><StatusBadge status={row.late_status} /></td>
-                      <td>
-                        {row.out_of_location ? (
-                          <StatusBadge status={['yes', '1', 'true', 'out of location', 'location violation'].includes(String(row.out_of_location).toLowerCase()) ? 'Out of Location' : 'In Location'} />
-                        ) : (
-                          <span className="text-slate-300 text-xs">—</span>
-                        )}
-                      </td>
-                    </tr>
-                  ))
-                )}
+                ) : details.map(row => (
+                  <tr
+                    key={row.id}
+                    onClick={() => onSelectEmployee?.(row.employee_name)}
+                    className="cursor-pointer"
+                  >
+                    <td className="font-semibold text-slate-800">{row.employee_name}</td>
+                    <td className="font-mono text-slate-400 text-[11px]">{row.employee_id || '—'}</td>
+                    <td className="text-slate-500">{row.department}</td>
+                    <td className="text-center font-mono text-slate-400 text-[11px]">{row.date}</td>
+                    <td className="text-center font-semibold text-slate-700">{row.punch_in_time || '—'}</td>
+                    <td className="text-center text-slate-400">{row.punch_out_time || '—'}</td>
+                    <td><StatusBadge status={row.attendance_status} /></td>
+                    <td><StatusBadge status={row.late_status} /></td>
+                    <td>
+                      {row.out_of_location
+                        ? <StatusBadge status={
+                            ['yes','1','true','out of location','location violation'].includes(
+                              String(row.out_of_location).toLowerCase()
+                            ) ? 'Out of Location' : 'In Location'
+                          } />
+                        : <span className="text-slate-300 text-xs">—</span>
+                      }
+                    </td>
+                  </tr>
+                ))}
               </tbody>
             </table>
           </div>

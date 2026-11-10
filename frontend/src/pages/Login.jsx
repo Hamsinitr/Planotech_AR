@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { getApiBaseUrl, setApiBaseUrl } from '../api/client';
-import { Lock, Mail, Zap, Server, Check, ChevronRight, Eye, EyeOff } from 'lucide-react';
+import { Lock, Mail, Server, Check, ChevronRight, Eye, EyeOff } from 'lucide-react';
 
 export const Login = () => {
   const { login, loading } = useAuth();
@@ -49,9 +49,12 @@ export const Login = () => {
 
         <div className="relative z-10 max-w-sm">
           <div className="flex items-center gap-3 mb-10">
-            <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: 'linear-gradient(135deg, #3b82f6, #7c3aed)' }}>
-              <Zap className="w-5 h-5 text-white" />
-            </div>
+            <img
+              src="/logo.png"
+              alt="Planotech"
+              className="w-10 h-10 rounded-xl object-contain flex-shrink-0"
+              style={{ background: '#080c1a' }}
+            />
             <div>
               <h1 className="text-lg font-black text-white tracking-wide">PLANOTECH</h1>
               <p className="text-[10px] font-bold tracking-widest uppercase" style={{ color: '#f59e0b' }}>HR Intelligence Platform</p>
@@ -94,9 +97,12 @@ export const Login = () => {
         <div className="w-full max-w-md relative">
           {/* Mobile logo */}
           <div className="lg:hidden flex items-center gap-3 mb-8 justify-center">
-            <div className="w-9 h-9 rounded-xl flex items-center justify-center" style={{ background: 'linear-gradient(135deg, #3b82f6, #7c3aed)' }}>
-              <Zap className="w-4.5 h-4.5 text-white" />
-            </div>
+            <img
+              src="/logo.png"
+              alt="Planotech"
+              className="w-9 h-9 rounded-xl object-contain flex-shrink-0"
+              style={{ background: '#080c1a' }}
+            />
             <div>
               <h1 className="text-base font-black text-white">PLANOTECH</h1>
               <p className="text-[9px] font-bold tracking-widest uppercase" style={{ color: '#f59e0b' }}>HR Intelligence</p>

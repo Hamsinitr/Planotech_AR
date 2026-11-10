@@ -18,8 +18,8 @@
   ],
   "start_url": "/",
   "scope": "/",
-  "background_color": "#0f172a",
-  "theme_color": "#2563eb",
+  "background_color": "#080c1a",
+  "theme_color": "#8b5cf6",
   "display": "standalone",
   "orientation": "any",
   "categories": ["business", "productivity", "utilities"]

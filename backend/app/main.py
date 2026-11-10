@@ -1,4 +1,6 @@
+# pyrefly: ignore [missing-import]
 from fastapi import FastAPI
+# pyrefly: ignore [missing-import]
 from fastapi.middleware.cors import CORSMiddleware
 from app.config import settings
 from app.database import engine, Base, SessionLocal
@@ -91,7 +93,9 @@ def init_db_defaults():
     finally:
         db.close()
 
+# pyrefly: ignore [missing-import]
 from fastapi.responses import FileResponse
+# pyrefly: ignore [missing-import]
 from fastapi.staticfiles import StaticFiles
 from app.config import settings, BASE_DIR
 
@@ -118,6 +122,7 @@ def root():
     return {
         "message": "Welcome to Planotech HR Analytics API",
         "documentation": "/api/docs",
+        
         "health": "/health"
     }
 

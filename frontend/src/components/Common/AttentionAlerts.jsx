@@ -14,12 +14,10 @@ import {
   Filter
 } from 'lucide-react';
 
-export const AttentionAlerts = ({ attentionData, onSelectEmployee }) => {
+export const AttentionAlerts = ({ attentionData = {}, onSelectEmployee }) => {
   const [expanded, setExpanded] = useState(true);
   const [activeTab, setActiveTab] = useState('all'); // 'all' | 'unsubmitted' | 'late' | 'location' | 'absent' | 'unsub_repeat'
   const [search, setSearch] = useState('');
-
-  if (!attentionData) return null;
 
   const {
     absent_today = [],
@@ -28,7 +26,7 @@ export const AttentionAlerts = ({ attentionData, onSelectEmployee }) => {
     repeated_late = [],
     repeated_out_of_location = [],
     out_of_location_today = [],
-  } = attentionData;
+  } = attentionData || {};
 
   // Normalize list with category identifiers
   const allItems = useMemo(() => {
@@ -139,79 +137,101 @@ export const AttentionAlerts = ({ attentionData, onSelectEmployee }) => {
     if (search.trim()) {
       const q = search.toLowerCase();
       list = list.filter(item =>
-        item.employee_name.toLowerCase().includes(q) ||
-        (item.department && item.department.toLowerCase().includes(q)) ||
-        (item.employee_id && item.employee_id.toLowerCase().includes(q))
+        item.employee_name?.toLowerCase().includes(q) ||
+        item.employee_id?.toLowerCase().includes(q) ||
+        item.department?.toLowerCase().includes(q) ||
+        item.reason?.toLowerCase().includes(q)
       );
     }
     return list;
   }, [allItems, activeTab, search]);
 
-  if (allItems.length === 0) {
-    return (
-      <div className="bg-white rounded-xl border border-emerald-200 p-4 shadow-sm flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <div className="w-8 h-8 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center font-bold">
-            <CheckCircle2 className="w-5 h-5" />
-          </div>
-          <div>
-            <h3 className="text-xs font-bold text-slate-800">Operational Health Clean</h3>
-            <p className="text-[11px] text-slate-500 mt-0.5">No attendance or report compliance issues detected for this period.</p>
-          </div>
-        </div>
-        <span className="px-2.5 py-1 rounded-full bg-emerald-100 text-emerald-800 text-[11px] font-bold">100% Compliant</span>
-      </div>
-    );
-  }
+  if (!attentionData) return null;
+
+  const totalUrgent = unsubmitted_today.length + repeated_late.length + repeated_out_of_location.length;
 
   return (
-    <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden transition-all duration-200">
-      {/* ─── Header Bar ─── */}
-      <div className="px-5 py-4 border-b border-slate-100 flex flex-wrap items-center justify-between gap-3 bg-gradient-to-r from-slate-900 via-slate-900 to-navy-900 text-white">
+    <div className="bg-white rounded-2xl border border-slate-200/90 shadow-sm overflow-hidden transition-all duration-200">
+      {/* ─── Header Banner ─── */}
+      <div
+        onClick={() => setExpanded(!expanded)}
+        className="flex items-center justify-between px-5 py-4 cursor-pointer hover:bg-slate-50/80 transition-colors select-none border-b border-slate-100"
+      >
         <div className="flex items-center gap-3">
-          <div className="w-9 h-9 rounded-xl bg-amber-500/20 border border-amber-400/30 flex items-center justify-center text-amber-400 flex-shrink-0">
-            <AlertTriangle className="w-5 h-5" />
+          <div className="w-9 h-9 rounded-xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center flex-shrink-0">
+            <AlertTriangle className="w-5 h-5 text-amber-600" />
           </div>
           <div>
-            <div className="flex items-center gap-2.5">
-              <h3 className="text-sm font-bold tracking-wide text-white">Operational Alerts & Compliance Exceptions</h3>
-              <span className="px-2 py-0.5 rounded-full bg-rose-500/20 text-rose-300 border border-rose-500/30 text-[11px] font-bold">
-                {allItems.length} Flagged
-              </span>
+            <div className="flex items-center gap-2">
+              <h3 className="text-sm font-bold text-slate-900 tracking-tight">
+                Operational Attention & Exceptions Hub
+              </h3>
+              {totalUrgent > 0 && (
+                <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 text-amber-800 border border-amber-200 animate-pulse">
+                  {totalUrgent} Actionable
+                </span>
+              )}
             </div>
-            <p className="text-[11px] text-slate-400 mt-0.5">
-              Review unsubmitted reports, chronic late arrivals, and location anomalies without clutter
+            <p className="text-xs text-slate-500 mt-0.5">
+              Live automated compliance audit: punch delays, missing reports, location violations, and absenteeism.
             </p>
           </div>
         </div>
 
         <div className="flex items-center gap-3">
-          {/* Quick Search */}
-          <div className="relative">
-            <Search className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
-            <input
-              type="text"
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              placeholder="Search flagged employee..."
-              className="pl-8 pr-3 py-1.5 bg-slate-800/80 border border-slate-700 rounded-lg text-xs text-white placeholder-slate-400 w-48 focus:w-60 transition-all outline-none focus:border-amber-400"
-            />
-          </div>
-
+          <span className="text-xs font-semibold text-slate-500 hidden sm:inline">
+            {allItems.length} total flagged
+          </span>
           <button
-            onClick={() => setExpanded(!expanded)}
-            className="p-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white transition"
-            title={expanded ? 'Collapse section' : 'Expand section'}
+            type="button"
+            className="w-8 h-8 rounded-lg border border-slate-200 flex items-center justify-center text-slate-500 hover:text-slate-800 hover:bg-slate-100 transition"
           >
             {expanded ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
           </button>
         </div>
       </div>
 
+      {/* ─── Body: Filter Controls + Items Grid ─── */}
       {expanded && (
         <div className="p-5 space-y-4">
-          {/* ─── Category Filter Pills ─── */}
-          <div className="flex flex-wrap items-center gap-2 pb-2 border-b border-slate-100">
+          {/* Controls: Search + Tabs */}
+          <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3">
+            {/* Search Bar */}
+            <div className="relative flex-1 max-w-sm">
+              <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+              <input
+                type="text"
+                placeholder="Search by employee name, ID, or department..."
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                className="w-full pl-9 pr-3 py-1.5 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 transition"
+              />
+              {search && (
+                <button
+                  onClick={() => setSearch('')}
+                  className="absolute right-2.5 top-1/2 -translate-y-1/2 text-[10px] text-slate-400 hover:text-slate-600 bg-slate-200 rounded-full w-4 h-4 flex items-center justify-center"
+                >
+                  ×
+                </button>
+              )}
+            </div>
+
+            {/* Total Metric Pills */}
+            <div className="flex items-center gap-2 text-[11px] font-semibold text-slate-600 overflow-x-auto pb-1 lg:pb-0">
+              <span className="px-2.5 py-1 bg-rose-50 text-rose-700 rounded-lg border border-rose-100 whitespace-nowrap">
+                {unsubmitted_today.length} No Report
+              </span>
+              <span className="px-2.5 py-1 bg-amber-50 text-amber-700 rounded-lg border border-amber-100 whitespace-nowrap">
+                {repeated_late.length} Frequent Late
+              </span>
+              <span className="px-2.5 py-1 bg-purple-50 text-purple-700 rounded-lg border border-purple-100 whitespace-nowrap">
+                {repeated_unsubmitted.length} Repeat Non-Submit
+              </span>
+            </div>
+          </div>
+
+          {/* Category Tabs */}
+          <div className="flex items-center gap-1.5 overflow-x-auto pb-1 border-b border-slate-100">
             {tabs.map((tab) => {
               const Icon = tab.icon;
               const isActive = activeTab === tab.id;

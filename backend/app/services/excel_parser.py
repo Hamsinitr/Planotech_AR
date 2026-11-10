@@ -111,6 +111,21 @@ def time_to_str(t: Optional[time]) -> Optional[str]:
         return None
     return t.strftime("%H:%M:%S")
 
+def safe_str(val) -> str | None:
+    """Safely convert a cell value to string, returning None for blank/NaN values."""
+    if val is None:
+        return None
+    try:
+        if pd.isna(val):
+            return None
+    except (TypeError, ValueError):
+        pass
+    s = str(val).strip()
+    if s.lower() in ["nan", "none", "null", "n/a", "na", "-", ""]:
+        return None
+    return s
+
+
 def parse_excel_file(file_contents: bytes, custom_mapping: Optional[Dict[str, str]] = None) -> List[Dict[str, Any]]:
     """Parse an Excel file buffer into a list of standardized row dicts across sheets."""
     excel_file = io.BytesIO(file_contents)
@@ -148,26 +163,30 @@ def parse_excel_file(file_contents: bytes, custom_mapping: Optional[Dict[str, st
 
     results = []
     for _, row in df.iterrows():
-        emp_name = str(row[mapping["employee_name"]]).strip() if mapping.get("employee_name") and not pd.isna(row[mapping["employee_name"]]) else None
-        if not emp_name or emp_name.lower() in ["total", "nan", "none", ""]:
+        emp_name = safe_str(row[mapping["employee_name"]]) if mapping.get("employee_name") else None
+        if not emp_name or emp_name.lower() in ["total", "nan", "none", "grand total", "sub total", ""]:
             continue
 
-        emp_id = str(row[mapping["employee_id"]]).strip() if mapping.get("employee_id") and not pd.isna(row[mapping["employee_id"]]) else None
-        dept = str(row[mapping["department"]]).strip() if mapping.get("department") and not pd.isna(row[mapping["department"]]) else "General"
+        emp_id = safe_str(row[mapping["employee_id"]]) if mapping.get("employee_id") else None
+        dept = safe_str(row[mapping["department"]]) if mapping.get("department") else None
+        if not dept:
+            dept = "General"
 
         punch_in = parse_time_value(row[mapping["punch_in_time"]]) if mapping.get("punch_in_time") else None
         punch_out = parse_time_value(row[mapping["punch_out_time"]]) if mapping.get("punch_out_time") else None
 
-        att_status = str(row[mapping["attendance_status"]]).strip() if mapping.get("attendance_status") and not pd.isna(row[mapping["attendance_status"]]) else None
-        out_of_loc = str(row[mapping["out_of_location"]]).strip() if mapping.get("out_of_location") and not pd.isna(row[mapping["out_of_location"]]) else None
+        att_status = safe_str(row[mapping["attendance_status"]]) if mapping.get("attendance_status") else None
+        out_of_loc = safe_str(row[mapping["out_of_location"]]) if mapping.get("out_of_location") else None
         rep_submitted_raw = None
         if mapping.get("report_submitted"):
             val = row[mapping["report_submitted"]]
-            rep_submitted_raw = str(val).strip().lower() if val is not None and not pd.isna(val) else None
+            rep_submitted_raw = safe_str(val)
+            if rep_submitted_raw:
+                rep_submitted_raw = rep_submitted_raw.lower()
 
-        rep_status = str(row[mapping["report_status"]]).strip() if mapping.get("report_status") and not pd.isna(row[mapping["report_status"]]) else None
-        quality = str(row[mapping["quality_rating"]]).strip() if mapping.get("quality_rating") and not pd.isna(row[mapping["quality_rating"]]) else None
-        notes = str(row[mapping["notes"]]).strip() if mapping.get("notes") and not pd.isna(row[mapping["notes"]]) else None
+        rep_status = safe_str(row[mapping["report_status"]]) if mapping.get("report_status") else None
+        quality = safe_str(row[mapping["quality_rating"]]) if mapping.get("quality_rating") else None
+        notes = safe_str(row[mapping["notes"]]) if mapping.get("notes") else None
         rec_date = parse_date_value(row[mapping["date"]]) if mapping.get("date") else None
 
         results.append({

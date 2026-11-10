@@ -101,14 +101,17 @@ async def process_daily_files(
     emp_cache = {e.normalized_name: e for e in known_employees}
 
     for row in raw_attendance:
-        norm_name = normalize_string(row["employee_name"])
-        norm_dept = normalize_department(row["department"])
-        emp_id = row["employee_id"]
+        raw_name = str(row["employee_name"]).strip() if row.get("employee_name") else None
+        if not raw_name or raw_name.lower() in ["nan", "none", ""]:
+            continue
+        norm_name = normalize_string(raw_name)
+        norm_dept = normalize_department(row.get("department") or "General")
+        emp_id = row.get("employee_id")
 
         if norm_name not in emp_cache:
             new_emp = Employee(
-                employee_id=emp_id,
-                name=row["employee_name"].strip(),
+                employee_id=emp_id if emp_id else None,
+                name=raw_name,
                 normalized_name=norm_name,
                 department=norm_dept,
                 status="Active"
@@ -117,12 +120,20 @@ async def process_daily_files(
             emp_cache[norm_name] = new_emp
         else:
             existing = emp_cache[norm_name]
+            # Update employee_id if we now have one
             if emp_id and not existing.employee_id:
                 existing.employee_id = emp_id
-            if norm_dept and not existing.department:
+            # Update department if previously blank
+            if norm_dept and norm_dept != "GENERAL" and not existing.department:
                 existing.department = norm_dept
 
-    db.commit()
+    try:
+        db.commit()
+    except Exception:
+        db.rollback()
+        # Re-fetch after rollback to continue safely
+        known_employees = db.query(Employee).all()
+        emp_cache = {e.normalized_name: e for e in known_employees}
 
     # 5. Process Attendance Rows
     attendance_processed = []
@@ -393,4 +404,12 @@ def delete_upload_date(
     db.query(ProductivityRecord).filter(ProductivityRecord.date == date).delete()
     db.query(UploadHistory).filter(UploadHistory.date == date).delete()
     db.commit()
+
+    excel_file = os.path.join(settings.PROCESSED_DIR, f"Attendance_Analysis_{date}.xlsx")
+    if os.path.exists(excel_file):
+        try:
+            os.remove(excel_file)
+        except OSError:
+            pass
+
     return {"success": True, "message": f"All data for {date} deleted."}
