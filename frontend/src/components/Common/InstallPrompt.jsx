@@ -17,7 +17,7 @@ export default function InstallPrompt() {
     }
 
     // Check if dismissed within the last 7 days
-    const dismissedTime = localStorage.getItem('planotech_pwa_dismissed');
+    const dismissedTime = localStorage.getItem('hontime_pwa_dismissed');
     if (dismissedTime && Date.now() - parseInt(dismissedTime, 10) < 7 * 24 * 60 * 60 * 1000) {
       return;
     }
@@ -60,7 +60,7 @@ export default function InstallPrompt() {
 
   const handleDismiss = () => {
     setShowPrompt(false);
-    localStorage.setItem('planotech_pwa_dismissed', Date.now().toString());
+    localStorage.setItem('hontime_pwa_dismissed', Date.now().toString());
   };
 
   if (!showPrompt) return null;
@@ -74,7 +74,7 @@ export default function InstallPrompt() {
               <Smartphone className="w-5 h-5 text-white" />
             </div>
             <div>
-              <h4 className="font-semibold text-sm text-slate-100">Install Planotech HR</h4>
+              <h4 className="font-semibold text-sm text-slate-100">Install Hontime HR</h4>
               <p className="text-xs text-slate-400">Add to home screen for full experience</p>
             </div>
           </div>

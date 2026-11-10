@@ -1,6 +1,6 @@
 {
-  "appId": "com.planotech.hranalytics",
-  "appName": "Planotech HR",
+  "appId": "com.hontime.hranalytics",
+  "appName": "Hontime HR",
   "webDir": "dist",
   "server": {
     "androidScheme": "https",

@@ -57,11 +57,11 @@ export const BottomNav = ({ activeTab, setActiveTab }) => {
               <div className="flex items-center gap-2.5">
                 <div className="w-8 h-8 rounded-lg insta-gradient-ring flex items-center justify-center p-0.5">
                   <div className="w-full h-full bg-slate-900 rounded-[6px] flex items-center justify-center overflow-hidden">
-                    <img src="/logo.png" alt="Planotech" className="w-full h-full object-contain rounded-[5px]" />
+                    <img src="/logo.png" alt="Hontime" className="w-full h-full object-contain rounded-[5px]" />
                   </div>
                 </div>
                 <div>
-                  <h3 className="text-sm font-bold text-slate-900">Planotech Portal</h3>
+                  <h3 className="text-sm font-bold text-slate-900">Hontime Portal</h3>
                   <p className="text-[10px] text-slate-400">Navigation & Account</p>
                 </div>
               </div>

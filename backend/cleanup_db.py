@@ -68,3 +68,4 @@ try:
         print(f"  [{e.id:3}] {e.normalized_name:<35} {e.department}")
 finally:
     db.close()
+

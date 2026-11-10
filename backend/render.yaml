@@ -1,6 +1,6 @@
 services:
   - type: web
-    name: planotech-backend
+    name: hontime-backend
     env: python
     region: oregon
     plan: free

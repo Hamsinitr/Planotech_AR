@@ -417,7 +417,7 @@ export const EmployeeDetailModal = ({ employeeIdentifier, onClose }) => {
 
         {/* ── Footer ────────────────────────────────────── */}
         <div className="px-5 py-3 border-t border-slate-100 bg-slate-50 flex items-center justify-between">
-          <span className="text-[11px] text-slate-400">Planotech AR • Verified Employee Master</span>
+          <span className="text-[11px] text-slate-400">Hontime • Verified Employee Master</span>
           <button
             onClick={onClose}
             className="px-4 py-1.5 text-xs font-bold text-slate-700 bg-white border border-slate-200 rounded-xl hover:bg-slate-100 transition shadow-xs active:scale-95"

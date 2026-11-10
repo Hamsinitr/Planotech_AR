@@ -1,6 +1,6 @@
 # install_shortcut.ps1
 # Double-click this file (or right-click -> Run with PowerShell) to place
-# the Planotech AR shortcut on your Desktop.
+# the Hontime shortcut on your Desktop.
 
 $project  = Split-Path -Parent $MyInvocation.MyCommand.Path
 $launchPy = Join-Path $project "launch.py"
@@ -29,14 +29,14 @@ if (-not $desktop -or -not (Test-Path $desktop)) {
     $desktop = "$env:USERPROFILE\OneDrive\Desktop"
 }
 
-$lnkPath = Join-Path $desktop "Planotech AR.lnk"
+$lnkPath = Join-Path $desktop "Hontime.lnk"
 
 $wsh = New-Object -ComObject WScript.Shell
 $sc  = $wsh.CreateShortcut($lnkPath)
 $sc.TargetPath       = $pythonw
 $sc.Arguments        = "`"$launchPy`""
 $sc.WorkingDirectory = $project
-$sc.Description      = "Planotech AR - HR Intelligence Platform"
+$sc.Description      = "Hontime - HR Intelligence Platform"
 if (Test-Path $iconFile) { $sc.IconLocation = $iconFile }
 $sc.WindowStyle = 7   # minimized = starts with no visible window
 $sc.Save()
@@ -45,6 +45,6 @@ Write-Host ""
 Write-Host "  ✅  Shortcut installed!" -ForegroundColor Green
 Write-Host "  📍  $lnkPath" -ForegroundColor Cyan
 Write-Host ""
-Write-Host "  Double-click 'Planotech AR' on your Desktop to launch the app." -ForegroundColor White
+Write-Host "  Double-click 'Hontime' on your Desktop to launch the app." -ForegroundColor White
 Read-Host "  Press Enter to close"
 

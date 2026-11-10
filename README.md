@@ -1,4 +1,4 @@
-# Planotech AR — HR Attendance, Report & Productivity Intelligence Platform
+# Hontime — HR Attendance, Report & Productivity Intelligence Platform
 
 > **Enterprise Workforce Analytics, Punctuality Tracking, Compliance Audit, and Mathematical Reconciliation Platform**
 
@@ -11,7 +11,7 @@
 
 ## 🌟 Overview
 
-**Planotech AR** is a modern HR intelligence and compliance auditing platform built for automated ingestion, processing, and multi-dimensional analysis of daily attendance logs and work reports. 
+**Hontime** is a modern HR intelligence and compliance auditing platform built for automated ingestion, processing, and multi-dimensional analysis of daily attendance logs and work reports. 
 
 The platform bridges raw biometric/punch-in sheets with daily task reports, resolves naming mismatches, validates strict mathematical reconciliation across departments, flags compliance exceptions, and generates formatted corporate 9-sheet Excel workbooks.
 
@@ -77,7 +77,7 @@ In PowerShell:
 ```powershell
 powershell -ExecutionPolicy Bypass -File create_shortcut.ps1
 ```
-This creates a **Planotech HR Portal** desktop shortcut with the official app icon that launches directly into standalone app mode.
+This creates a **Hontime Portal** desktop shortcut with the official app icon that launches directly into standalone app mode.
 
 ### Option C: Enable Silent Auto-Start on System Boot
 In PowerShell:
@@ -91,8 +91,8 @@ powershell -ExecutionPolicy Bypass -File enable_autostart.ps1
 
 | Role | Email | Password | Access Level |
 | :--- | :--- | :--- | :--- |
-| **Administrator** | `admin@planotech.com` | `admin123` | Full access (Upload, Delete, Audit, Settings) |
-| **Viewer** | `viewer@planotech.com` | `viewer123` | Read-only analytics & reports |
+| **Administrator** | `admin@hontime.com` | `admin123` | Full access (Upload, Delete, Audit, Settings) |
+| **Viewer** | `viewer@hontime.com` | `viewer123` | Read-only analytics & reports |
 
 ---
 
@@ -113,7 +113,7 @@ The project includes `frontend/vercel.json` with API rewrites.
 - Build Command: `npm run build`
 - Output Directory: `dist`
 - Environment Variables:
-  - `VITE_API_URL`: URL of your Render backend (e.g. `https://planotech-backend.onrender.com/api`).
+  - `VITE_API_URL`: URL of your Render backend (e.g. `https://hontime-backend.onrender.com/api`).
 
 ---
 
@@ -134,5 +134,5 @@ npm run build
 ---
 
 ## 📄 License & Attribution
-Designed & Engineered for **Planotech AR** Enterprise Operations. All rights reserved.
+Designed & Engineered for **Hontime** Enterprise Operations. All rights reserved.
 

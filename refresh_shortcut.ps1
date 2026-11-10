@@ -4,20 +4,19 @@ $iconFile  = Join-Path $project 'app.ico'
 $pythonw   = 'C:\Users\hamsi\AppData\Local\Programs\Python\Python313\pythonw.exe'
 $desktop   = 'C:\Users\hamsi\OneDrive\Desktop'
 
-# Remove ALL old Planotech shortcuts
-Get-ChildItem $desktop -Filter 'Planotech*.lnk' | Remove-Item -Force -ErrorAction SilentlyContinue
+# Remove ALL old shortcuts (Planotech or Hontime)
+Get-ChildItem $desktop -Filter '*.lnk' | Where-Object { $_.Name -match 'Planotech|Hontime' } | Remove-Item -Force -ErrorAction SilentlyContinue
 
-# Create clean new shortcut
+# Create clean new shortcut named Hontime
 $wsh = New-Object -ComObject WScript.Shell
-$sc  = $wsh.CreateShortcut((Join-Path $desktop 'Planotech AR.lnk'))
+$sc  = $wsh.CreateShortcut((Join-Path $desktop 'Hontime.lnk'))
 $sc.TargetPath       = $pythonw
 $sc.Arguments        = ('"' + $launchPy + '"')
 $sc.WorkingDirectory = $project
-$sc.Description      = 'Planotech AR - HR Intelligence Platform'
+$sc.Description      = 'Hontime - HR Intelligence Platform'
 $sc.IconLocation     = $iconFile
 $sc.WindowStyle      = 7
 $sc.Save()
-Write-Host 'Shortcut created successfully'
+Write-Host 'Hontime shortcut created'
 
-# Refresh desktop icon cache
 ie4uinit.exe -ClearIconCache

@@ -1,5 +1,5 @@
 # create_shortcut.ps1
-# Creates a Planotech AR shortcut on the Desktop that launches silently
+# Creates a Hontime shortcut on the Desktop that launches silently
 # (no CMD window, no terminal in taskbar) using pythonw.exe
 
 $projectDir = Split-Path -Parent $MyInvocation.MyCommand.Path
@@ -35,7 +35,7 @@ foreach ($p in $desktopPaths) {
 }
 if (-not $desktop) { $desktop = "$env:USERPROFILE\Desktop" }
 
-$shortcutPath = Join-Path $desktop "Planotech AR.lnk"
+$shortcutPath = Join-Path $desktop "Hontime.lnk"
 
 $wsh = New-Object -ComObject WScript.Shell
 $shortcut = $wsh.CreateShortcut($shortcutPath)
@@ -55,7 +55,7 @@ WshShell.Run "python ""$($launchScript.Replace('\','\\'))""", 0, False
 }
 
 $shortcut.WorkingDirectory = $projectDir
-$shortcut.Description      = "Planotech AR – HR Intelligence Platform"
+$shortcut.Description      = "Hontime – HR Intelligence Platform"
 if (Test-Path $iconFile) { $shortcut.IconLocation = $iconFile }
 $shortcut.WindowStyle = 7  # 7 = minimized (keeps shortcut launch invisible)
 $shortcut.Save()

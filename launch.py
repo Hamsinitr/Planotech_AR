@@ -1,5 +1,5 @@
 """
-Planotech AR – Silent Desktop Launcher
+Hontime – Silent Desktop Launcher
 --------------------------------------
 Starts the FastAPI backend silently (zero CMD windows in taskbar)
 then opens the app in Edge / Chrome standalone App Mode.

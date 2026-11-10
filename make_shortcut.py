@@ -1,5 +1,5 @@
 """
-make_shortcut.py – Creates Planotech AR desktop shortcut using PowerShell IWshRuntimeLibrary
+make_shortcut.py – Creates Hontime desktop shortcut using PowerShell IWshRuntimeLibrary
 Works even on OneDrive Desktop by writing to a temp path then copying.
 """
 import os, shutil, subprocess, sys, tempfile
@@ -34,7 +34,7 @@ if not desktop:
     print("ERROR: could not find Desktop folder")
     sys.exit(1)
 
-shortcut_name = "Planotech AR.lnk"
+shortcut_name = "Hontime.lnk"
 # Write to a temp location first, then copy to desktop
 tmp_dir = Path(tempfile.mkdtemp())
 tmp_lnk = tmp_dir / shortcut_name
@@ -46,7 +46,7 @@ $sc  = $wsh.CreateShortcut('{str(tmp_lnk).replace(chr(92), "/")}')
 $sc.TargetPath       = '{str(pythonw_path).replace(chr(92), "/")}'
 $sc.Arguments        = '"{str(launch_py).replace(chr(92), "/")}"'
 $sc.WorkingDirectory = '{str(project).replace(chr(92), "/")}'
-$sc.Description      = 'Planotech AR - HR Intelligence Platform'
+$sc.Description      = 'Hontime - HR Intelligence Platform'
 $sc.IconLocation     = '{str(icon_path).replace(chr(92), "/")}' 
 $sc.WindowStyle      = 7
 $sc.Save()

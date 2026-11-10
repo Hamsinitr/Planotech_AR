@@ -70,11 +70,11 @@ export const Sidebar = ({ activeTab, setActiveTab, isOpen, onClose }) => {
           <div className="flex items-center space-x-2.5">
             <img
               src="/logo.png"
-              alt="Planotech"
+              alt="Hontime"
               className="w-8 h-8 rounded-lg object-contain shadow-md flex-shrink-0 ring-1 ring-purple-500/30 bg-black/40"
             />
             <div>
-              <h1 className="text-sm font-bold text-white tracking-wide leading-none">PLANOTECH</h1>
+              <h1 className="text-sm font-bold text-white tracking-wide leading-none">HONTIME</h1>
               <p className="text-[9px] mt-0.5 font-semibold tracking-widest uppercase text-purple-400">
                 HR Intelligence
               </p>

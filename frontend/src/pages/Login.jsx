@@ -5,7 +5,7 @@ import { Lock, Mail, Server, Check, ChevronRight, Eye, EyeOff } from 'lucide-rea
 
 export const Login = () => {
   const { login, loading } = useAuth();
-  const [email, setEmail] = useState('admin@planotech.com');
+  const [email, setEmail] = useState('admin@hontime.com');
   const [password, setPassword] = useState('admin123');
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
@@ -25,8 +25,8 @@ export const Login = () => {
 
   const handleQuickLogin = (role) => {
     const creds = role === 'admin'
-      ? { e: 'admin@planotech.com', p: 'admin123' }
-      : { e: 'viewer@planotech.com', p: 'viewer123' };
+      ? { e: 'admin@hontime.com', p: 'admin123' }
+      : { e: 'viewer@hontime.com', p: 'viewer123' };
     setEmail(creds.e);
     setPassword(creds.p);
     login(creds.e, creds.p);
@@ -51,12 +51,12 @@ export const Login = () => {
           <div className="flex items-center gap-3 mb-10">
             <img
               src="/logo.png"
-              alt="Planotech"
+              alt="Hontime"
               className="w-10 h-10 rounded-xl object-contain flex-shrink-0"
               style={{ background: '#080c1a' }}
             />
             <div>
-              <h1 className="text-lg font-black text-white tracking-wide">PLANOTECH</h1>
+              <h1 className="text-lg font-black text-white tracking-wide">HONTIME</h1>
               <p className="text-[10px] font-bold tracking-widest uppercase" style={{ color: '#f59e0b' }}>HR Intelligence Platform</p>
             </div>
           </div>
@@ -99,12 +99,12 @@ export const Login = () => {
           <div className="lg:hidden flex items-center gap-3 mb-8 justify-center">
             <img
               src="/logo.png"
-              alt="Planotech"
+              alt="Hontime"
               className="w-9 h-9 rounded-xl object-contain flex-shrink-0"
               style={{ background: '#080c1a' }}
             />
             <div>
-              <h1 className="text-base font-black text-white">PLANOTECH</h1>
+              <h1 className="text-base font-black text-white">HONTIME</h1>
               <p className="text-[9px] font-bold tracking-widest uppercase" style={{ color: '#f59e0b' }}>HR Intelligence</p>
             </div>
           </div>

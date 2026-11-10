@@ -32,19 +32,19 @@ def seed_database():
 
     try:
         # 1. Admin & Viewer users
-        if not db.query(User).filter(User.email == "admin@planotech.com").first():
+        if not db.query(User).filter(User.email == "admin@hontime.com").first():
             db.add(User(
-                email="admin@planotech.com",
+                email="admin@hontime.com",
                 hashed_password=hash_password("admin123"),
-                full_name="Planotech Administrator",
+                full_name="Hontime Administrator",
                 role="admin",
                 is_active=True
             ))
-        if not db.query(User).filter(User.email == "viewer@planotech.com").first():
+        if not db.query(User).filter(User.email == "viewer@hontime.com").first():
             db.add(User(
-                email="viewer@planotech.com",
+                email="viewer@hontime.com",
                 hashed_password=hash_password("viewer123"),
-                full_name="Planotech HR Viewer",
+                full_name="Hontime HR Viewer",
                 role="viewer",
                 is_active=True
             ))
@@ -96,7 +96,7 @@ def seed_database():
                         normalized_name=norm_name,
                         department=norm_dept,
                         designation="Senior Analyst" if "0" in emp["id"] else "Specialist",
-                        email=f"{norm_name.lower().replace(' ', '.')}@planotech.com",
+                        email=f"{norm_name.lower().replace(' ', '.')}@hontime.com",
                         status="Active"
                     )
                     db.add(emp_obj)

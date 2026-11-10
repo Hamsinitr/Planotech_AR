@@ -5,15 +5,15 @@ from pydantic_settings import BaseSettings
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 class Settings(BaseSettings):
-    PROJECT_NAME: str = "Planotech HR & Productivity Analytics"
+    PROJECT_NAME: str = "Hontime HR & Productivity Analytics"
     API_V1_STR: str = "/api"
-    SECRET_KEY: str = os.getenv("SECRET_KEY", "planotech-enterprise-secret-key-change-in-prod-2026")
+    SECRET_KEY: str = os.getenv("SECRET_KEY", "hontime-enterprise-secret-key-change-in-prod-2026")
     ALGORITHM: str = "HS256"
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 60 * 24 * 7  # 7 days
 
     # Database: Supports PostgreSQL (e.g. postgresql://user:pass@host/db)
     # Defaults to SQLite for immediate local execution if DATABASE_URL is not set
-    DATABASE_URL: str = os.getenv("DATABASE_URL", f"sqlite:///{BASE_DIR / 'planotech.db'}")
+    DATABASE_URL: str = os.getenv("DATABASE_URL", f"sqlite:///{BASE_DIR / 'hontime.db'}")
 
     # File uploads storage
     UPLOAD_DIR: str = str(BASE_DIR / "uploads")

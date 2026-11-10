@@ -106,7 +106,7 @@ def get_employee_history(
             "name": emp.name,
             "department": emp.department,
             "designation": emp.designation or "Team Member",
-            "email": emp.email or f"{emp.normalized_name.lower().replace(' ', '.')}@planotech.com",
+            "email": emp.email or f"{emp.normalized_name.lower().replace(' ', '.')}@hontime.com",
             "joining_date": emp.joining_date or "2024-01-15",
             "status": emp.status
         },

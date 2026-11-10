@@ -49,24 +49,24 @@ def init_db_defaults():
     db = SessionLocal()
     try:
         # Default Admin
-        admin_user = db.query(User).filter(User.email == "admin@planotech.com").first()
+        admin_user = db.query(User).filter(User.email == "admin@hontime.com").first()
         if not admin_user:
             admin_user = User(
-                email="admin@planotech.com",
+                email="admin@hontime.com",
                 hashed_password=hash_password("admin123"),
-                full_name="Planotech Administrator",
+                full_name="Hontime Administrator",
                 role="admin",
                 is_active=True
             )
             db.add(admin_user)
 
         # Default Viewer
-        viewer_user = db.query(User).filter(User.email == "viewer@planotech.com").first()
+        viewer_user = db.query(User).filter(User.email == "viewer@hontime.com").first()
         if not viewer_user:
             viewer_user = User(
-                email="viewer@planotech.com",
+                email="viewer@hontime.com",
                 hashed_password=hash_password("viewer123"),
-                full_name="Planotech HR Analyst",
+                full_name="Hontime HR Analyst",
                 role="viewer",
                 is_active=True
             )
@@ -120,7 +120,7 @@ def root():
     if index_file.exists():
         return FileResponse(str(index_file))
     return {
-        "message": "Welcome to Planotech HR Analytics API",
+        "message": "Welcome to Hontime HR Analytics API",
         "documentation": "/api/docs",
         
         "health": "/health"

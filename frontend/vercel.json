@@ -2,7 +2,7 @@
   "rewrites": [
     {
       "source": "/api/:path*",
-      "destination": "https://planotech-backend.onrender.com/api/:path*"
+      "destination": "https://hontime-backend.onrender.com/api/:path*"
     },
     {
       "source": "/(.*)",

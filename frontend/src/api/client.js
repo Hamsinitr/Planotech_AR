@@ -2,7 +2,7 @@ import axios from 'axios';
 import { Capacitor } from '@capacitor/core';
 
 export const getApiBaseUrl = () => {
-  const saved = localStorage.getItem('planotech_api_url');
+  const saved = localStorage.getItem('hontime_api_url');
   if (saved) return saved;
 
   if (import.meta.env.VITE_API_URL) {
@@ -38,13 +38,13 @@ export const setApiBaseUrl = (url) => {
   if (!cleaned.endsWith('/api') && cleaned.startsWith('http')) {
     cleaned = `${cleaned}/api`;
   }
-  localStorage.setItem('planotech_api_url', cleaned);
+  localStorage.setItem('hontime_api_url', cleaned);
   api.defaults.baseURL = cleaned;
 };
 
 api.interceptors.request.use((config) => {
   config.baseURL = getApiBaseUrl();
-  const token = localStorage.getItem('planotech_token');
+  const token = localStorage.getItem('hontime_token');
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
   }
@@ -57,8 +57,8 @@ api.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response && error.response.status === 401) {
-      localStorage.removeItem('planotech_token');
-      localStorage.removeItem('planotech_user');
+      localStorage.removeItem('hontime_token');
+      localStorage.removeItem('hontime_user');
     }
     return Promise.reject(error);
   }

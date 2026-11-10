@@ -1,4 +1,4 @@
-const CACHE_NAME = 'planotech-pwa-v1';
+const CACHE_NAME = 'hontime-pwa-v1';
 const PRECACHE_URLS = [
   '/',
   '/index.html',

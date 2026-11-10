@@ -5,7 +5,7 @@ const AuthContext = createContext(null);
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(() => {
-    const saved = localStorage.getItem('planotech_user');
+    const saved = localStorage.getItem('hontime_user');
     return saved ? JSON.parse(saved) : null;
   });
   const [loading, setLoading] = useState(false);
@@ -17,8 +17,8 @@ export const AuthProvider = ({ children }) => {
       const { access_token, role, full_name, email: userEmail } = res.data;
       const userData = { email: userEmail, role, full_name };
 
-      localStorage.setItem('planotech_token', access_token);
-      localStorage.setItem('planotech_user', JSON.stringify(userData));
+      localStorage.setItem('hontime_token', access_token);
+      localStorage.setItem('hontime_user', JSON.stringify(userData));
       setUser(userData);
       return { success: true };
     } catch (err) {
@@ -32,8 +32,8 @@ export const AuthProvider = ({ children }) => {
   };
 
   const logout = () => {
-    localStorage.removeItem('planotech_token');
-    localStorage.removeItem('planotech_user');
+    localStorage.removeItem('hontime_token');
+    localStorage.removeItem('hontime_user');
     setUser(null);
   };
 
