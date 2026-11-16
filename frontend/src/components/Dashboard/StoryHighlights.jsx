@@ -136,7 +136,7 @@ export const StoryHighlights = ({
       type: 'alert',
       tag: '⚠️ ATTENTION RADAR',
       title: `${lateCount} Late Check-Ins`,
-      subtitle: 'HR Follow-up recommended',
+      subtitle: 'Follow-up recommended',
       avatar: '🔔',
       label: 'Late Alerts',
       ringColor: 'from-rose-500 via-amber-500 to-orange-500',

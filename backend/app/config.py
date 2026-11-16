@@ -5,7 +5,7 @@ from pydantic_settings import BaseSettings
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 class Settings(BaseSettings):
-    PROJECT_NAME: str = "Hontime HR & Productivity Analytics"
+    PROJECT_NAME: str = "Hontime Attendance & Productivity Analytics"
     API_V1_STR: str = "/api"
     SECRET_KEY: str = os.getenv("SECRET_KEY", "hontime-enterprise-secret-key-change-in-prod-2026")
     ALGORITHM: str = "HS256"

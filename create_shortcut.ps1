@@ -1,4 +1,4 @@
-# create_shortcut.ps1
+﻿# create_shortcut.ps1
 # Creates a Hontime shortcut on the Desktop that launches silently
 # (no CMD window, no terminal in taskbar) using pythonw.exe
 
@@ -55,7 +55,7 @@ WshShell.Run "python ""$($launchScript.Replace('\','\\'))""", 0, False
 }
 
 $shortcut.WorkingDirectory = $projectDir
-$shortcut.Description      = "Hontime – HR Intelligence Platform"
+$shortcut.Description      = "Hontime – Attendance & Operations Platform"
 if (Test-Path $iconFile) { $shortcut.IconLocation = $iconFile }
 $shortcut.WindowStyle = 7  # 7 = minimized (keeps shortcut launch invisible)
 $shortcut.Save()

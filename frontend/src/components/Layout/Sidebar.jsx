@@ -76,7 +76,7 @@ export const Sidebar = ({ activeTab, setActiveTab, isOpen, onClose }) => {
             <div>
               <h1 className="text-sm font-bold text-white tracking-wide leading-none">HONTIME</h1>
               <p className="text-[9px] mt-0.5 font-semibold tracking-widest uppercase text-purple-400">
-                HR Intelligence
+                Operations & Analytics
               </p>
             </div>
           </div>

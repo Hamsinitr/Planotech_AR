@@ -48,7 +48,7 @@ export const Header = ({ activeTab, selectedDate, setSelectedDate, onRefresh, on
   };
 
   const titles = {
-    dashboard: 'HR Executive Dashboard',
+    dashboard: 'Executive Operations Dashboard',
     upload: 'Daily Excel Ingestion',
     attendance: 'Attendance Analysis',
     reports: 'Report Submission & Quality',
@@ -85,7 +85,7 @@ export const Header = ({ activeTab, selectedDate, setSelectedDate, onRefresh, on
 
         <div>
           <h2 className="text-sm font-bold text-slate-900 leading-tight">
-            {titles[activeTab] || 'HR Analytics'}
+            {titles[activeTab] || 'Analytics Dashboard'}
           </h2>
           <p className="text-[10px] text-slate-400 hidden sm:block mt-0.5">
             {subtitles[activeTab] || ''}

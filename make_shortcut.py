@@ -46,7 +46,7 @@ $sc  = $wsh.CreateShortcut('{str(tmp_lnk).replace(chr(92), "/")}')
 $sc.TargetPath       = '{str(pythonw_path).replace(chr(92), "/")}'
 $sc.Arguments        = '"{str(launch_py).replace(chr(92), "/")}"'
 $sc.WorkingDirectory = '{str(project).replace(chr(92), "/")}'
-$sc.Description      = 'Hontime - HR Intelligence Platform'
+$sc.Description      = 'Hontime - Attendance & Operations Platform'
 $sc.IconLocation     = '{str(icon_path).replace(chr(92), "/")}' 
 $sc.WindowStyle      = 7
 $sc.Save()

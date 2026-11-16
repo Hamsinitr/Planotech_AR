@@ -44,7 +44,7 @@ def seed_database():
             db.add(User(
                 email="viewer@hontime.com",
                 hashed_password=hash_password("viewer123"),
-                full_name="Hontime HR Viewer",
+                full_name="Hontime Operations Viewer",
                 role="viewer",
                 is_active=True
             ))

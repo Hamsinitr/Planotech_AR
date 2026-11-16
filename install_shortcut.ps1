@@ -1,4 +1,4 @@
-# install_shortcut.ps1
+﻿# install_shortcut.ps1
 # Double-click this file (or right-click -> Run with PowerShell) to place
 # the Hontime shortcut on your Desktop.
 
@@ -36,7 +36,7 @@ $sc  = $wsh.CreateShortcut($lnkPath)
 $sc.TargetPath       = $pythonw
 $sc.Arguments        = "`"$launchPy`""
 $sc.WorkingDirectory = $project
-$sc.Description      = "Hontime - HR Intelligence Platform"
+$sc.Description      = "Hontime - Attendance & Operations Platform"
 if (Test-Path $iconFile) { $sc.IconLocation = $iconFile }
 $sc.WindowStyle = 7   # minimized = starts with no visible window
 $sc.Save()

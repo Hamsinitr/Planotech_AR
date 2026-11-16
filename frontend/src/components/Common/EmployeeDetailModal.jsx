@@ -227,7 +227,7 @@ export const EmployeeDetailModal = ({ employeeIdentifier, onClose }) => {
                 )}
                 <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-purple-50 border border-purple-200 text-purple-800 text-[11px] font-bold flex-shrink-0">
                   <Award className="w-3 h-3 text-purple-500" />
-                  <span>HR Verified Profile</span>
+                  <span>Verified Profile</span>
                 </div>
               </div>
 

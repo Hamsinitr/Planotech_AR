@@ -13,7 +13,7 @@ $sc  = $wsh.CreateShortcut((Join-Path $desktop 'Hontime.lnk'))
 $sc.TargetPath       = $pythonw
 $sc.Arguments        = ('"' + $launchPy + '"')
 $sc.WorkingDirectory = $project
-$sc.Description      = 'Hontime - HR Intelligence Platform'
+$sc.Description      = 'Hontime - Attendance & Operations Platform'
 $sc.IconLocation     = $iconFile
 $sc.WindowStyle      = 7
 $sc.Save()

@@ -25,7 +25,7 @@ export const ActivityFeed = ({
 
   const [comments, setComments] = useState({
     'post-1': [
-      { user: 'HR Operations', text: 'Incredible dedication! Keep up the brilliant pace 👏', time: '1h ago' },
+      { user: 'Operations Team', text: 'Incredible dedication! Keep up the brilliant pace 👏', time: '1h ago' },
       { user: 'Kavita M.', text: 'Well deserved recognition! 🚀', time: '35m ago' }
     ],
     'post-2': [
@@ -65,7 +65,7 @@ export const ActivityFeed = ({
       ...prev,
       [postId]: [
         ...(prev[postId] || []),
-        { user: 'You (HR Team)', text, time: 'Just now' }
+        { user: 'You (Team)', text, time: 'Just now' }
       ]
     }));
 
@@ -322,7 +322,7 @@ export const ActivityFeed = ({
                   <div className="w-4 h-4 rounded-full bg-rose-500 border border-white" />
                 </div>
                 <p className="text-xs font-bold text-slate-900">
-                  Liked by <span className="font-extrabold text-blue-600">HR Operations</span> and{' '}
+                  Liked by <span className="font-extrabold text-blue-600">Operations Team</span> and{' '}
                   <span className="font-extrabold">{postLikes.count} others</span>
                 </p>
               </div>

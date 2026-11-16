@@ -66,7 +66,7 @@ def init_db_defaults():
             viewer_user = User(
                 email="viewer@hontime.com",
                 hashed_password=hash_password("viewer123"),
-                full_name="Hontime HR Analyst",
+                full_name="Hontime Operations Analyst",
                 role="viewer",
                 is_active=True
             )
@@ -120,7 +120,7 @@ def root():
     if index_file.exists():
         return FileResponse(str(index_file))
     return {
-        "message": "Welcome to Hontime HR Analytics API",
+        "message": "Welcome to Hontime Analytics API",
         "documentation": "/api/docs",
         
         "health": "/health"

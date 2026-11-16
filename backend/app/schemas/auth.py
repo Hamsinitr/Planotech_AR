@@ -16,6 +16,15 @@ class UserLogin(BaseModel):
     email: str
     password: str
 
+class PasswordResetRequest(BaseModel):
+    email: str
+    new_password: str
+    confirm_password: Optional[str] = None
+
+class PasswordResetResponse(BaseModel):
+    success: bool
+    message: str
+
 class UserOut(BaseModel):
     id: int
     email: str

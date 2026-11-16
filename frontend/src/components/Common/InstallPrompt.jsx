@@ -74,7 +74,7 @@ export default function InstallPrompt() {
               <Smartphone className="w-5 h-5 text-white" />
             </div>
             <div>
-              <h4 className="font-semibold text-sm text-slate-100">Install Hontime HR</h4>
+              <h4 className="font-semibold text-sm text-slate-100">Install Hontime App</h4>
               <p className="text-xs text-slate-400">Add to home screen for full experience</p>
             </div>
           </div>
