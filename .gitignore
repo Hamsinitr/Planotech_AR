@@ -1,4 +1,9 @@
 # Python / Backend
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.pytest_cache/
 backend/__pycache__/
 backend/*/__pycache__/
 backend/*/*/__pycache__/
@@ -10,6 +15,8 @@ backend/uploads/Daily_Report_*
 backend/processed_exports/*
 backend/*.db
 backend/planotech.db
+backend/hontime.db
+*.db
 
 # Node / Frontend
 frontend/node_modules/
