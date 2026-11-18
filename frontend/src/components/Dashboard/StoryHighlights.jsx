@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import {
   Heart,
   X,
@@ -20,6 +21,16 @@ export const StoryHighlights = ({
   const [isPaused, setIsPaused] = useState(false);
   const [kudosCounts, setKudosCounts] = useState({});
   const [floatingHearts, setFloatingHearts] = useState([]);
+
+  // Lock background scroll when story modal is open
+  useEffect(() => {
+    if (activeStoryIndex !== null) {
+      document.body.style.overflow = 'hidden';
+      return () => {
+        document.body.style.overflow = '';
+      };
+    }
+  }, [activeStoryIndex]);
 
   // Compute story list from real data
   const stories = [];
@@ -251,16 +262,19 @@ export const StoryHighlights = ({
         </div>
       </div>
 
-      {/* Instagram Story Full-Screen / Modal Viewer */}
-      {currentStory && (
+      {/* Instagram Story Full-Screen / Modal Viewer (Mounted at Body Top via Portal) */}
+      {currentStory && typeof document !== 'undefined' && createPortal(
         <div
-          className="fixed inset-0 z-50 bg-black/90 backdrop-blur-xl flex items-center justify-center p-2 sm:p-4"
+          className="fixed inset-0 z-[99999] bg-black/90 backdrop-blur-xl flex flex-col items-center justify-center p-3 sm:p-6"
+          style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, zIndex: 99999 }}
           onClick={() => setActiveStoryIndex(null)}
         >
           {/* Main Story Container (Instagram 9:16 mobile aspect card) */}
           <div
-            className="relative w-full max-w-sm sm:max-w-md h-[90vh] max-h-[720px] rounded-3xl overflow-hidden shadow-2xl flex flex-col justify-between text-white border border-white/10"
+            className="relative w-full max-w-sm sm:max-w-md my-auto rounded-3xl overflow-hidden shadow-2xl flex flex-col justify-between text-white border border-white/10"
             style={{
+              height: 'min(640px, 90vh)',
+              maxHeight: 'min(640px, 90vh)',
               background: 'linear-gradient(180deg, #090d16 0%, #151d30 50%, #0a0f1d 100%)'
             }}
             onClick={(e) => e.stopPropagation()}
@@ -397,7 +411,8 @@ export const StoryHighlights = ({
               </button>
             </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </>
   );

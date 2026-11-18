@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { createPortal } from 'react-dom';
 import {
   X,
   Clock,
@@ -25,6 +26,14 @@ export const EmployeeDetailModal = ({ employeeIdentifier, onClose }) => {
   const [hasLiked, setHasLiked] = useState(false);
   const [copied, setCopied] = useState(false);
   const [floatingHearts, setFloatingHearts] = useState([]);
+
+  // Lock background scroll while modal is open
+  useEffect(() => {
+    document.body.style.overflow = 'hidden';
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, []);
 
   useEffect(() => {
     if (!employeeIdentifier) return;
@@ -61,9 +70,16 @@ export const EmployeeDetailModal = ({ employeeIdentifier, onClose }) => {
   const employeeName = data?.employee?.name || employeeIdentifier;
   const username = `@${employeeName.toLowerCase().replace(/\s+/g, '.')}`;
 
-  return (
-    <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-3 sm:p-5 animate-fade-up">
-      <div className="bg-white rounded-3xl shadow-2xl max-w-3xl w-full max-h-[92vh] overflow-hidden flex flex-col border border-slate-100">
+  return createPortal(
+    <div
+      className="fixed inset-0 z-[99999] bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-3 sm:p-5"
+      style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, zIndex: 99999 }}
+      onClick={onClose}
+    >
+      <div
+        className="bg-white rounded-3xl shadow-2xl max-w-3xl w-full max-h-[92vh] overflow-hidden flex flex-col border border-slate-100 animate-fade-up"
+        onClick={(e) => e.stopPropagation()}
+      >
 
         {/* ── Top Bar: Instagram Header Style ───────────── */}
         <div className="px-5 py-3.5 border-b border-slate-100 flex items-center justify-between bg-white sticky top-0 z-20">
@@ -426,7 +442,8 @@ export const EmployeeDetailModal = ({ employeeIdentifier, onClose }) => {
           </button>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 };
 
