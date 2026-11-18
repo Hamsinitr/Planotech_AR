@@ -64,15 +64,10 @@ def find_browser() -> str | None:
 
 
 def start_backend(port: int) -> None:
-    """Launch uvicorn silently with no console window."""
+    """Launch backend silently with no console window."""
     python = find_python()
-    cmd = [
-        python, "-m", "uvicorn",
-        "app.main:app",
-        "--host", "127.0.0.1",
-        "--port", str(port),
-        "--log-level", "error",   # minimize output
-    ]
+    server_script = BACKEND_DIR / "run_server.py"
+    cmd = [python, str(server_script)]
 
     kwargs = dict(
         cwd=str(BACKEND_DIR),
