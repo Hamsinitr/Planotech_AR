@@ -11,8 +11,10 @@ import {
   Sparkles
 } from 'lucide-react';
 import api from '../api/client';
+import { useToast } from '../context/ToastContext';
 
 export const DailyUpload = ({ onUploadSuccess }) => {
+  const { showToast } = useToast();
   const [date, setDate] = useState(() => new Date().toISOString().split('T')[0]);
   const [attFile, setAttFile] = useState(null);
   const [repFile, setRepFile] = useState(null);
@@ -90,8 +92,9 @@ export const DailyUpload = ({ onUploadSuccess }) => {
       link.click();
       link.remove();
       window.URL.revokeObjectURL(url);
+      showToast(`Master Excel for ${d} downloaded successfully!`, 'success');
     } catch (err) {
-      alert('Failed to download Excel file. Please ensure data exists for this date.');
+      showToast('Failed to download Excel file. Please ensure data exists for this date.', 'error');
     } finally {
       setDownloading(false);
     }

@@ -2,12 +2,14 @@ import React, { useEffect, useState } from 'react';
 import { History, CheckCircle, AlertTriangle, RefreshCw, Trash2, Calendar, FileSpreadsheet } from 'lucide-react';
 import api from '../api/client';
 import { useAuth } from '../context/AuthContext';
+import { useToast } from '../context/ToastContext';
 
 export const UploadHistory = () => {
   const [history, setHistory] = useState([]);
   const [loading, setLoading] = useState(true);
   const [downloadingDate, setDownloadingDate] = useState(null);
   const { isAdmin } = useAuth();
+  const { showToast } = useToast();
 
   const fetchHistory = async () => {
     setLoading(true);
@@ -41,8 +43,9 @@ export const UploadHistory = () => {
       link.click();
       link.remove();
       window.URL.revokeObjectURL(url);
+      showToast(`Master Excel for ${date} downloaded successfully!`, 'success');
     } catch (err) {
-      alert('Failed to download Excel file. Please make sure data exists for this date.');
+      showToast('Failed to download Excel file. Please make sure data exists for this date.', 'error');
     } finally {
       setDownloadingDate(null);
     }
@@ -52,9 +55,10 @@ export const UploadHistory = () => {
     if (!window.confirm(`Delete all data for ${date}? This cannot be undone.`)) return;
     try {
       await api.delete(`/upload/${date}`);
+      showToast(`Data for ${date} has been deleted.`, 'info');
       fetchHistory();
     } catch (err) {
-      alert('Failed to delete: ' + (err.response?.data?.detail || err.message));
+      showToast('Failed to delete: ' + (err.response?.data?.detail || err.message), 'error');
     }
   };
 

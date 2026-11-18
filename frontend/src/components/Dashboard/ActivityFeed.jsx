@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useToast } from '../../context/ToastContext';
 import {
   Heart,
   MessageCircle,
@@ -15,6 +16,7 @@ export const ActivityFeed = ({
   selectedDate,
   onSelectEmployee
 }) => {
+  const { showToast } = useToast();
   // Store likes and comments in local state for snappy interactivity
   const [likes, setLikes] = useState({
     'post-1': { count: 34, liked: false },
@@ -294,7 +296,7 @@ export const ActivityFeed = ({
                     onClick={() => {
                       if (navigator.clipboard) {
                         navigator.clipboard.writeText(window.location.href);
-                        alert('Recognition post link copied to clipboard!');
+                        showToast('Recognition post link copied to clipboard!', 'success');
                       }
                     }}
                     className="text-slate-700 hover:text-blue-600 transition active:scale-90"

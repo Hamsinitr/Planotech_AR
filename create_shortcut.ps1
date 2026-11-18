@@ -1,4 +1,4 @@
-﻿# create_shortcut.ps1
+# create_shortcut.ps1
 # Creates a Hontime shortcut on the Desktop that launches silently
 # (no CMD window, no terminal in taskbar) using pythonw.exe
 

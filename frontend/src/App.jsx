@@ -55,10 +55,12 @@ function MainApp() {
         <Header
           key={`header-${refreshKey}`}
           activeTab={activeTab}
+          setActiveTab={setActiveTab}
           selectedDate={selectedDate}
           setSelectedDate={setSelectedDate}
           onRefresh={handleRefresh}
           onToggleSidebar={() => setSidebarOpen(!sidebarOpen)}
+          onSelectEmployee={setSelectedEmployee}
         />
 
         <main className="flex-1 overflow-y-auto bg-slate-50 pb-24 md:pb-8">
@@ -67,6 +69,7 @@ function MainApp() {
               <Dashboard
                 selectedDate={selectedDate}
                 onSelectEmployee={setSelectedEmployee}
+                onNavigateTab={setActiveTab}
               />
             )}
             {activeTab === 'upload' && (
@@ -116,11 +119,15 @@ function MainApp() {
   );
 }
 
+import { ToastProvider } from './context/ToastContext';
+
 export default function App() {
   return (
     <AuthProvider>
-      <MainApp />
-      <InstallPrompt />
+      <ToastProvider>
+        <MainApp />
+        <InstallPrompt />
+      </ToastProvider>
     </AuthProvider>
   );
 }

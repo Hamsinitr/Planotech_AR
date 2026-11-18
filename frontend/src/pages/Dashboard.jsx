@@ -2,13 +2,15 @@ import React, { useEffect, useState, useCallback } from 'react';
 import {
   Users, UserCheck, UserX, FileCheck, FileX,
   Clock, Award, BarChart3, ShieldCheck, AlertOctagon, TrendingUp,
-  Activity, LayoutGrid, Radio
+  Activity, LayoutGrid, Radio, UploadCloud, Trophy, FileText,
+  FileSpreadsheet, ArrowRight, Filter, Sparkles
 } from 'lucide-react';
 import {
   ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, Legend,
   CartesianGrid, PieChart, Pie, Cell
 } from 'recharts';
 import api from '../api/client';
+import { useToast } from '../context/ToastContext';
 import KPICard from '../components/Common/KPICard';
 import AttentionAlerts from '../components/Common/AttentionAlerts';
 import StoryHighlights from '../components/Dashboard/StoryHighlights';
@@ -72,7 +74,8 @@ const LoadingSkeleton = () => (
   </div>
 );
 
-export const Dashboard = ({ selectedDate, onSelectEmployee }) => {
+export const Dashboard = ({ selectedDate, onSelectEmployee, onNavigateTab }) => {
+  const { showToast } = useToast();
   const [kpis, setKpis] = useState(null);
   const [attention, setAttention] = useState(null);
   const [attSummary, setAttSummary] = useState(null);
@@ -81,6 +84,8 @@ export const Dashboard = ({ selectedDate, onSelectEmployee }) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [viewMode, setViewMode] = useState('analytics'); // 'analytics' | 'feed'
+  const [selectedDept, setSelectedDept] = useState('All');
+  const [exporting, setExporting] = useState(false);
 
   const fetchData = useCallback(async () => {
     if (!selectedDate) return;
@@ -138,22 +143,53 @@ export const Dashboard = ({ selectedDate, onSelectEmployee }) => {
     { name: 'Absent',     value: kpis?.absent_today          || 0 },
   ];
 
-  const deptAttData = (attSummary?.summary_1 || []).map(row => ({
-    dept: row.department?.length > 10 ? row.department.substring(0, 10) + '…' : row.department,
-    'On Time': row.before_930,
-    'Grace':   row.between_930_945,
-    'Late':    row.after_945,
-    'Absent':  row.not_punched_or_absent,
-  }));
+  const deptList = ['All', ...new Set((attSummary?.summary_1 || []).map(r => r.department).filter(Boolean))];
 
-  const deptPerfData = (prodSummary?.department_summary || []).map(row => {
-    const repRow = (repSummary?.quality_summary || []).find(r => r.department === row.department);
-    return {
+  const filteredAttData = (attSummary?.summary_1 || [])
+    .filter(row => selectedDept === 'All' || row.department === selectedDept)
+    .map(row => ({
       dept: row.department?.length > 10 ? row.department.substring(0, 10) + '…' : row.department,
-      Productivity: Math.round(row.productivity_score),
-      Quality: Math.round(repRow?.avg_quality_score || 0),
-    };
-  });
+      'On Time': row.before_930,
+      'Grace':   row.between_930_945,
+      'Late':    row.after_945,
+      'Absent':  row.not_punched_or_absent,
+    }));
+
+  const filteredPerfData = (prodSummary?.department_summary || [])
+    .filter(row => selectedDept === 'All' || row.department === selectedDept)
+    .map(row => {
+      const repRow = (repSummary?.quality_summary || []).find(r => r.department === row.department);
+      return {
+        dept: row.department?.length > 10 ? row.department.substring(0, 10) + '…' : row.department,
+        Productivity: Math.round(row.productivity_score),
+        Quality: Math.round(repRow?.avg_quality_score || 0),
+      };
+    });
+
+  const handleQuickExport = async () => {
+    if (!selectedDate || exporting) return;
+    setExporting(true);
+    showToast(`Generating Master Excel for ${selectedDate}...`, 'info');
+    try {
+      const response = await api.get(`/export/${selectedDate}/excel`, { responseType: 'blob' });
+      const blob = new Blob([response.data], {
+        type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+      });
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', `Attendance_Analysis_${selectedDate}.xlsx`);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(url);
+      showToast(`Master Excel for ${selectedDate} exported successfully!`, 'success');
+    } catch (err) {
+      showToast('Failed to export Excel file for this date.', 'error');
+    } finally {
+      setExporting(false);
+    }
+  };
 
   const lateData = (attSummary?.summary_2 || [])
     .filter(r => r.late_punch_in > 0)
@@ -235,6 +271,118 @@ export const Dashboard = ({ selectedDate, onSelectEmployee }) => {
       ) : (
         /* ── Executive Analytics View Mode ─────────────────── */
         <>
+          {/* ── Amazon-style Quick Actions Dock ── */}
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2.5">
+            <button
+              onClick={() => onNavigateTab && onNavigateTab('upload')}
+              className="flex items-center gap-2 p-3 rounded-2xl bg-white border border-slate-200/80 shadow-xs hover:border-blue-400 hover:shadow-md transition text-left group"
+            >
+              <div className="w-8 h-8 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center flex-shrink-0 group-hover:bg-blue-600 group-hover:text-white transition">
+                <UploadCloud className="w-4 h-4" />
+              </div>
+              <div className="min-w-0">
+                <p className="text-xs font-bold text-slate-800 truncate">Ingest Data</p>
+                <p className="text-[10px] text-slate-400">Excel files</p>
+              </div>
+            </button>
+
+            <button
+              onClick={() => onNavigateTab && onNavigateTab('productivity')}
+              className="flex items-center gap-2 p-3 rounded-2xl bg-white border border-slate-200/80 shadow-xs hover:border-amber-400 hover:shadow-md transition text-left group"
+            >
+              <div className="w-8 h-8 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center flex-shrink-0 group-hover:bg-amber-500 group-hover:text-white transition">
+                <Trophy className="w-4 h-4" />
+              </div>
+              <div className="min-w-0">
+                <p className="text-xs font-bold text-slate-800 truncate">Leaderboard</p>
+                <p className="text-[10px] text-slate-400">Top ranks</p>
+              </div>
+            </button>
+
+            <button
+              onClick={() => onNavigateTab && onNavigateTab('attendance')}
+              className="flex items-center gap-2 p-3 rounded-2xl bg-white border border-slate-200/80 shadow-xs hover:border-emerald-400 hover:shadow-md transition text-left group"
+            >
+              <div className="w-8 h-8 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center flex-shrink-0 group-hover:bg-emerald-600 group-hover:text-white transition">
+                <Clock className="w-4 h-4" />
+              </div>
+              <div className="min-w-0">
+                <p className="text-xs font-bold text-slate-800 truncate">Attendance</p>
+                <p className="text-[10px] text-slate-400">Punch logs</p>
+              </div>
+            </button>
+
+            <button
+              onClick={() => onNavigateTab && onNavigateTab('reports')}
+              className="flex items-center gap-2 p-3 rounded-2xl bg-white border border-slate-200/80 shadow-xs hover:border-purple-400 hover:shadow-md transition text-left group"
+            >
+              <div className="w-8 h-8 rounded-xl bg-purple-50 text-purple-600 flex items-center justify-center flex-shrink-0 group-hover:bg-purple-600 group-hover:text-white transition">
+                <FileText className="w-4 h-4" />
+              </div>
+              <div className="min-w-0">
+                <p className="text-xs font-bold text-slate-800 truncate">Work Reports</p>
+                <p className="text-[10px] text-slate-400">Quality score</p>
+              </div>
+            </button>
+
+            <button
+              onClick={() => onNavigateTab && onNavigateTab('employees')}
+              className="flex items-center gap-2 p-3 rounded-2xl bg-white border border-slate-200/80 shadow-xs hover:border-indigo-400 hover:shadow-md transition text-left group"
+            >
+              <div className="w-8 h-8 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center flex-shrink-0 group-hover:bg-indigo-600 group-hover:text-white transition">
+                <Users className="w-4 h-4" />
+              </div>
+              <div className="min-w-0">
+                <p className="text-xs font-bold text-slate-800 truncate">Roster</p>
+                <p className="text-[10px] text-slate-400">{kpis?.total_employees || 60} profiles</p>
+              </div>
+            </button>
+
+            <button
+              onClick={handleQuickExport}
+              disabled={exporting}
+              className="flex items-center gap-2 p-3 rounded-2xl bg-gradient-to-r from-emerald-600 to-teal-600 text-white shadow-xs hover:shadow-md transition text-left active:scale-95 disabled:opacity-50"
+            >
+              <div className="w-8 h-8 rounded-xl bg-white/20 flex items-center justify-center flex-shrink-0">
+                <FileSpreadsheet className="w-4 h-4 text-white" />
+              </div>
+              <div className="min-w-0">
+                <p className="text-xs font-bold truncate">{exporting ? 'Exporting...' : '1-Click Master'}</p>
+                <p className="text-[10px] text-emerald-100">9-Sheet Excel</p>
+              </div>
+            </button>
+          </div>
+
+          {/* ── Amazon-style Department Category Filter Chips ── */}
+          {deptList.length > 1 && (
+            <div className="flex items-center gap-2 overflow-x-auto no-scrollbar py-1">
+              <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider flex items-center gap-1 flex-shrink-0 pl-1">
+                <Filter className="w-3 h-3 text-slate-400" /> Filter:
+              </span>
+              {deptList.map((d) => {
+                const isSelected = selectedDept === d;
+                return (
+                  <button
+                    key={d}
+                    onClick={() => {
+                      setSelectedDept(d);
+                      if (d !== 'All') {
+                        showToast(`Filtered dashboard to ${d}`, 'info', 1500);
+                      }
+                    }}
+                    className={`px-3 py-1.5 rounded-full text-xs font-bold transition-all flex-shrink-0 active:scale-95 ${
+                      isSelected
+                        ? 'bg-slate-900 text-white shadow-sm'
+                        : 'bg-white text-slate-600 border border-slate-200 hover:border-slate-300'
+                    }`}
+                  >
+                    {d}
+                  </button>
+                );
+              })}
+            </div>
+          )}
+
           {/* Reconciliation Banner */}
           {kpis && (
             <div className={`rounded-2xl border px-4 py-3.5 flex items-center justify-between gap-4 shadow-sm ${
@@ -390,9 +538,9 @@ export const Dashboard = ({ selectedDate, onSelectEmployee }) => {
             <div className="chart-card p-5">
               <SectionTitle sub="Punch-in brackets by department">Attendance Breakdown</SectionTitle>
               <div className="h-56">
-                {deptAttData.length > 0 ? (
+                {filteredAttData.length > 0 ? (
                   <ResponsiveContainer width="100%" height="100%">
-                    <BarChart data={deptAttData} barSize={12} margin={{ bottom: 0 }}>
+                    <BarChart data={filteredAttData} barSize={12} margin={{ bottom: 0 }}>
                       <CartesianGrid strokeDasharray="2 4" stroke="#f1f5f9" vertical={false} />
                       <XAxis dataKey="dept" tick={{ fontSize: 9, fill: '#94a3b8' }} axisLine={false} tickLine={false} />
                       <YAxis tick={{ fontSize: 9, fill: '#94a3b8' }} axisLine={false} tickLine={false} />
@@ -418,9 +566,9 @@ export const Dashboard = ({ selectedDate, onSelectEmployee }) => {
             <div className="chart-card p-5">
               <SectionTitle sub="Quality & productivity score by department">Department Performance</SectionTitle>
               <div className="h-60">
-                {deptPerfData.length > 0 ? (
+                {filteredPerfData.length > 0 ? (
                   <ResponsiveContainer width="100%" height="100%">
-                    <BarChart data={deptPerfData} barSize={12} barGap={4} margin={{ bottom: 0 }}>
+                    <BarChart data={filteredPerfData} barSize={12} barGap={4} margin={{ bottom: 0 }}>
                       <CartesianGrid strokeDasharray="2 4" stroke="#f1f5f9" vertical={false} />
                       <XAxis dataKey="dept" tick={{ fontSize: 9, fill: '#94a3b8' }} axisLine={false} tickLine={false} />
                       <YAxis domain={[0, 100]} tick={{ fontSize: 9, fill: '#94a3b8' }} axisLine={false} tickLine={false} />

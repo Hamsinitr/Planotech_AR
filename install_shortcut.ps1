@@ -1,4 +1,4 @@
-﻿# install_shortcut.ps1
+# install_shortcut.ps1
 # Double-click this file (or right-click -> Run with PowerShell) to place
 # the Hontime shortcut on your Desktop.
 
